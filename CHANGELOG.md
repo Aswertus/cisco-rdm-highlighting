@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.4]
+
+No rule changes. The release zip now includes `media/`, so the README inside it shows its screenshots.
+
 ## [0.1.3]
 
 No rule changes. Issue forms for wrong or missing colours, setup problems and ideas, with a private

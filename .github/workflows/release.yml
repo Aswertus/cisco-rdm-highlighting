@@ -26,7 +26,7 @@ jobs:
           set -euo pipefail
           name="cisco-rdm-highlighting-${GITHUB_REF_NAME}"
           mkdir -p "build/$name"
-          cp -r default-background vscode-background README.md LICENSE CHANGELOG.md "build/$name/"
+          cp -r default-background vscode-background media README.md LICENSE CHANGELOG.md "build/$name/"
           (cd build && zip -qr "$name.zip" "$name")
           ls -l build/*.zip
 
