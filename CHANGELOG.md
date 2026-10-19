@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2]
+
+No rule changes. Repository housekeeping: the pull-request check now also accepts issue forms
+(`.github/ISSUE_TEMPLATE/*.yml`) and a workflow that locks long-closed issues.
+
 ## [0.1.1]
 
 No rule changes.
