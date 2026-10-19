@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.1]
+
+No rule changes.
+
+- README: before/after and `show` output screenshots, and an illustrated setup guide.
+- Setup starts with a terminal font override (Consolas 11, anti-aliased) — RDM's default font is
+  thin enough to wash the colours out.
+- Step 5 uses RDM's _Default profile_, so the profile applies to every SSH session.
+- Settings path updated for RDM 2026.3: File → Settings → Entry Types → Sessions → Terminal.
+
 ## [0.1.0]
 
 First release.
