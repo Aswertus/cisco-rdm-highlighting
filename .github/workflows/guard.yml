@@ -42,7 +42,7 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          ALLOWED: '^(README\.md|LICENSE|CHANGELOG\.md|(default|vscode)-background/[A-Za-z0-9._-]+\.(xml|txt)|media/[A-Za-z0-9._-]+\.png|\.github/workflows/(guard|release)\.yml)$'
+          ALLOWED: '^(README\.md|LICENSE|CHANGELOG\.md|(default|vscode)-background/[A-Za-z0-9._-]+\.(xml|txt)|media/[A-Za-z0-9._-]+\.png|\.github/workflows/(guard|release|lock-closed)\.yml|\.github/ISSUE_TEMPLATE/[A-Za-z0-9._-]+\.yml)$'
         run: |
           set -euo pipefail
           if [ "$EVENT" = pull_request_target ]; then
