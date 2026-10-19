@@ -1,0 +1,47 @@
+name: 🐞 Import or setup problem
+description: RDM refuses a file, the colours don't show up, or a setup step doesn't match your RDM.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening: the most common causes are covered under **Good to know** in the README —
+        importing on the profile _list_ instead of inside a profile, or importing into a profile that
+        already has rules (new rules go to the bottom and the old ones win).
+
+        > [!WARNING]
+        > **Issues are public.** Crop screenshots to the settings dialog — no navigation pane with your
+        > entry names, no status bar with your user name.
+  - type: dropdown
+    id: step
+    attributes:
+      label: Which step?
+      options:
+        - 1 — Font
+        - 2 — Terminal colours (Daybreak-RDM-Dark.txt)
+        - 3/4 — Profile and rule import (RDM-Cisco-Vivid.xml)
+        - 5 — Default profile / SSH entry
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead? Paste any error text.
+    validations:
+      required: true
+  - type: dropdown
+    id: set
+    attributes:
+      label: Which set?
+      options:
+        - default-background
+        - vscode-background
+  - type: input
+    id: rdm
+    attributes:
+      label: RDM version and OS
+      placeholder: e.g. 2026.3.13.0, Windows 11
+    validations:
+      required: true

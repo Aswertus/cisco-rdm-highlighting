@@ -1,0 +1,60 @@
+name: 🎨 Wrong or missing colour
+description: A line is coloured when it shouldn't be, isn't coloured when it should be, or gets the wrong colour.
+labels: [colour]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! A screenshot is welcome — but only of a **lab or demo** device.
+
+        > [!WARNING]
+        > **Issues are public.** Never paste a full or production config, and never a screenshot of a real
+        > device's config or of your RDM navigation pane. Use a minimal snippet and replace hostnames, real IP
+        > addresses (use `192.0.2.x`, `198.51.100.x`, `203.0.113.x`), passwords and hashes, SNMP communities
+        > and keys.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What's wrong?
+      options:
+        - Something is coloured that shouldn't be
+        - Something should be coloured but isn't
+        - Wrong colour
+    validations:
+      required: true
+  - type: textarea
+    id: lines
+    attributes:
+      label: Affected line(s)
+      description: The line(s) as they appear in the terminal — sanitised, see the warning above.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: e.g. "`Gi0/0` inside the client-id string shouldn't be yellow".
+  - type: dropdown
+    id: set
+    attributes:
+      label: Which set?
+      options:
+        - default-background
+        - vscode-background
+    validations:
+      required: true
+  - type: input
+    id: rdm
+    attributes:
+      label: RDM version and OS
+      placeholder: e.g. 2026.3.13.0, Windows 11
+    validations:
+      required: true
+  - type: checkboxes
+    id: sanitised
+    attributes:
+      label: Data protection
+      options:
+        - label: My report contains no production hostnames, real IP addresses, passwords/hashes, SNMP communities or keys.
+          required: true
