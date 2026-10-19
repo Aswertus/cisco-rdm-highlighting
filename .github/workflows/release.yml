@@ -1,0 +1,51 @@
+name: Release
+
+# Publish a GitHub Release with a zip of both sets whenever a version tag is pushed. Tags are created
+# by scripts/public/release.sh --tag in the private dev repo — never push tags by hand.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions: {}
+
+jobs:
+  release:
+    if: github.repository == 'Aswertus/cisco-rdm-highlighting'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the built-in GITHUB_TOKEN creates the release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the zip
+        run: |
+          set -euo pipefail
+          name="cisco-rdm-highlighting-${GITHUB_REF_NAME}"
+          mkdir -p "build/$name"
+          cp -r default-background vscode-background README.md LICENSE CHANGELOG.md "build/$name/"
+          (cd build && zip -qr "$name.zip" "$name")
+          ls -l build/*.zip
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { flag=1; next }
+            /^## \[/ { flag=0 }
+            flag { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::No CHANGELOG.md section for $VERSION — add a '## [$VERSION]' entry before tagging."
+            exit 1
+          fi
+          cat release-notes.md
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          body_path: release-notes.md
+          files: 'build/*.zip'

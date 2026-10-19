@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxHighlightingItemList>
+  <Items>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>2775a662-3080-536b-abd8-bf2f0419614c</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)^(?!\*[A-Z][a-z]{2}\s|%[A-Z]|\s*--More--)[^\w\s!].*</Keyword>
+      <Name>Banner art (plain)</Name>
+      <TextColorString>#BBBBBB</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>cbdcba71-fb55-d4f2-9c1f-63322d71602e</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)^\^C\s*$</Keyword>
+      <Name>Banner delimiter ^C (plain)</Name>
+      <TextColorString>#BBBBBB</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>af6863d6-b440-e4eb-9871-50bb7b8d6beb</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)^\s*!.*</Keyword>
+      <Name>Comment line</Name>
+      <TextColorString>#6EE068</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>be044129-f134-27e5-48b0-da517e7c8a01</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)^.*\b(?:device-tracking attach-policy|ip device-tracking)\b.*$</Keyword>
+      <Name>device-tracking line (notice)</Name>
+      <TextColorString>#FF9500</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>01c43717-5b9f-3cd9-9c67-94c1d1ec0c39</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)\b(?:(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}|(?:[0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4})\b</Keyword>
+      <Name>MAC address</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>308a9203-67e6-b6f2-56d7-23b6066cbcfd</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:/(?:3[0-2]|[12]?\d)|:\d{1,5})?\b</Keyword>
+      <Name>IPv4 address</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>f0056a79-f596-1432-b858-3f1a719fa80b</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w:])(?=[0-9A-Fa-f:]*[A-Fa-f][0-9A-Fa-f:]*|[0-9A-Fa-f:]*::)(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?:/\d{1,3})?(?![\w:])</Keyword>
+      <Name>IPv6 address</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>c819a0c4-6f42-75fd-94af-1017462cbc1b</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;=^\s*|^[\w.-]+(?:\([\w-]+\))?[#&gt;]\s*)(?:no\s+)?snmp-server\b.*</Keyword>
+      <Name>snmp-server line</Name>
+      <TextColorString>#22DADA</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>28cd5cbe-2b78-bf91-0eb5-caa0695ac6b8</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;=\b(?:class-map|policy-map|class)\s(?:.*\s)?)\S+$</Keyword>
+      <Name>Name: class-map / policy-map / class</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>78c47e05-20bd-5e44-298b-7fd3a8a437f2</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;=\b(?:hostname|username|name|role|neighbor|peer-session|peer-policy|peer-group|route-map|prefix-list|pool|policy-list|traffic-filter|community|ssid|access-class|access-list|access-group|object-group|vrf|use-vrf|crypto\smap|ipsec\sprofile|isakmp\sprofile|keyring|key\schain|event\smanager\s(?:applet|environment|run)|ip\sdomain[\s-]name|transform-set)\s(?:(?:extended|standard|resequence|name|service|network|forwarding|definition|context|member|ipv4|ipv6|seq|description)\s)?)(?!(?:extended|standard|resequence|name|service|network|forwarding|definition|context|member|ipv4|ipv6|seq|description)\b)[^\s,]+</Keyword>
+      <Name>Name: after keyword</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>f13adfc8-4ba3-761e-88ca-ad8a78d0ef1f</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;=\b(?:(?:password|secret)\s\d+|key-string(?:\s\d+)?)\s)\S+</Keyword>
+      <Name>Password / secret / key-string</Name>
+      <TextColorString>#FFFFFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>bba2fcae-39e8-c264-f332-91a10468184f</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:Device|ID|Local|Intrfce|Holdtme|Capability|Platform|Port|Address|Interface|Hold|Uptime|SRTT|RTO|Seq|Neighbor|MsgRcvd|MsgSent|TblVer|InQ|OutQ|Up/Down|State/PfxRcd|interface|IP-Address|Method|OK\?|Status|Protocol|aaa|VLAN|Vlan|vlan|description|MTU|BW|DLY)(?![\w-])</Keyword>
+      <Name>Headers and structure words</Name>
+      <TextColorString>#6EE068</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>6ed9bed5-4897-4260-6f40-090a76b12064</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?:(?&lt;=\bon-)|(?&lt;![\w-]))(?:SUCCESS|[Ss]uccess(?:ful)?)(?![\w-])|(?&lt;![\w-])(?:yes|permit|enabled?|running|passed|Complete|remark|on|connected|bits/sec|packets/sec)(?![\w-])|\[OK\]|down-&gt;up|(?&lt;![\w-])up(?![\w-])|!+|\*{2,}|#{3,}|@+$</Keyword>
+      <Name>Good state</Name>
+      <TextColorString>#6EE068</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>549d4307-ee2d-8fe1-0257-85548b8c4a04</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:access-(?:lists?|class|group)|use-acl|prefix-list|time-range|object-group|(?:class|route)-map|macsec-policy|route-policy|prefix-set)(?![\w-])</Keyword>
+      <Name>ACL / policy keywords</Name>
+      <TextColorString>#E57BFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>811b426d-0d62-91a7-f244-4363839d420e</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:disabled|err-disabled)(?![\w-])</Keyword>
+      <Name>Notice: disabled, err-disabled</Name>
+      <TextColorString>#FF9500</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>758ab5cf-fda3-6fb5-ffce-0f973ed542a4</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?:(?&lt;=\bon-)|(?&lt;![\w-]))(?:[Ff]ail(?:ure|ed|s)?|FAIL(?:URE|ED)?)(?![\w-])|(?&lt;![\w-])(?:invalid|reload|no|notconnect(?:ed)?|NOT PRESENT|administratively(?:\sdown)?|shutdown|never|deny|down|not|initializing|Off|telnet|half-duplex|err-disabled|disabled|inhibit|erase|remove|delete)(?![\w-])|_ERR:|up-&gt;down|\[confirm\]|\(yes/no\)|\[yes/no\]|--More--|Building configuration</Keyword>
+      <Name>Warning / bad state</Name>
+      <TextColorString>#FF4A5A</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>aa007b64-69ed-2549-f0f1-88e333919fe5</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![-\w])(?:protocol-vlan|mac-vlan|dot1q-tunnel|dot1[Qq]|access|trunk|dynamic\s(?:auto|desirable)|add|remove|except|allowed|native|any|all|permit|deny|[Uu]p|[Dd]own|[Dd]eleted|[Aa]dministratively(?:-down)?|match-any|match-all|in|out|input|output|inside|outside|enabled?|disabled?|shutdown)(?![-\w])</Keyword>
+      <Name>Option keywords (editor set)</Name>
+      <TextColorString>#E57BFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>5e4ae7fd-228b-637a-6e27-eca7c4c72133</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:portfast)(?![\w-])</Keyword>
+      <Name>STP keywords</Name>
+      <TextColorString>#E57BFF</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>49f26f3a-b1b5-1d26-28a7-eaea514d74d7</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:authentication|authorization|accounting)(?![\w-])</Keyword>
+      <Name>AAA words</Name>
+      <TextColorString>#22DADA</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>fdccff4d-68a7-83f4-7aeb-cc3794236695</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:ftp|tcp|udp|tftp|scp|ssh|ntp|snmp(?:-server)?|inspect|icmp|router|isis|eigrp|bgp|ospf|rip|gre|hsrp|https?|vrf|voice)(?![\w-])</Keyword>
+      <Name>Protocols</Name>
+      <TextColorString>#22DADA</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>0a31df83-c812-7648-ee19-1d0a0d074818</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)\b(?:(?:[Ff]ast|(?:[Ff]ive|[Tt]en|[Tt]wenty[Ff]ive|[Ff](?:orty|ifty)|(?:[Tt]wo)?[Hh]undred)?[Gg](?:ig)?(?:abit)?)[Ee](?:th(?:ernet)?)?|[Ee]th(?:ernet)?|Fa|Gi|Te|Fo|Fi|Tw|Hu|App[Gg](?:ig)?(?:abit)?[Ee](?:th(?:ernet)?)?|[Ss]erial|[Cc]ellular|Management|[Mm]gmt|[Ll]oopback|Lo|[Tt]unnel|Tu|VLAN|[Vv]lan|Vl|[Nn]ull|[Vv]irtual-[Tt]emplate|[Dd]ialer|[Aa]sync|BRI|BVI|BDI|[Bb]ridge-?[Dd]omain|[Pp]ort-?[Cc]hannel|Po|[Dd]ot11[Rr]adio|LISP|[Ww]lan|[Vv]irtual-[Aa]ccess|[Bb]luetooth|[Nn][Vv][Ii]|[Vv][Mm][Ii]|[Vv]asi[Ll]eft|[Vv]asi[Rr]ight)(?:\d+[./])*\d+(?:\.\d+)?\b</Keyword>
+      <Name>Interface name</Name>
+      <TextColorString>#FFD433</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>0562655f-f021-6919-33e0-cc6e9ea54a41</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;=\b[Ii]nterface\s+)(?!range\b)[A-Za-z][^\s,]*\d[^\s,]*</Keyword>
+      <Name>Interface after keyword</Name>
+      <TextColorString>#FFD433</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>9d8b7459-22ff-ff8d-a3fd-d5a46bac8b04</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:line|console|con|vty|aux)(?![\w-])</Keyword>
+      <Name>Lines (con, vty, aux)</Name>
+      <TextColorString>#FFD433</TextColorString>
+    </SyntaxHighlightingItem>
+    <SyntaxHighlightingItem>
+      <BackColorString>#000000</BackColorString>
+      <BackgroundColor>Custom</BackgroundColor>
+      <ForegroundColor>Custom</ForegroundColor>
+      <ID>ee44ba9d-26e3-0229-a32c-ca0a757e8ade</ID>
+      <IsCompleteWord>false</IsCompleteWord>
+      <IsCaseSensitive>true</IsCaseSensitive>
+      <IsRegex>true</IsRegex>
+      <Keyword>(?-i)(?&lt;![\w-])(?:address-family)(?![\w-])</Keyword>
+      <Name>Section word: address-family</Name>
+      <TextColorString>#FFD433</TextColorString>
+    </SyntaxHighlightingItem>
+  </Items>
+</SyntaxHighlightingItemList>

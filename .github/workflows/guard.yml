@@ -1,0 +1,53 @@
+name: Guard
+
+# Server-side backstop: this repository may only ever contain the files listed in ALLOWED below
+# (the same allow-list the private dev repo enforces before a release is pushed). Fails a PR or a
+# push that adds anything else — a stray config, a dump, a submodule. Required check for main.
+#
+# pull_request_target (not pull_request): GitHub runs THIS file as it is on the base branch, so a PR
+# cannot edit the check that judges it. Safe because PR content is only listed with git, never
+# checked out or executed.
+on:
+  pull_request_target:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    if: github.repository == 'Aswertus/cisco-rdm-highlighting'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Only allowed paths
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          ALLOWED: '^(README\.md|LICENSE|CHANGELOG\.md|(default|vscode)-background/[A-Za-z0-9._-]+\.(xml|txt)|media/[A-Za-z0-9._-]+\.png|\.github/workflows/(guard|release)\.yml)$'
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = pull_request_target ]; then
+            git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/pr/head"
+            head=refs/pr/head
+            # every path any commit of the PR touches, not just the final tree
+            paths=$( { git ls-tree -r --name-only "$head"; git log -m --format= --name-only --no-renames "$BASE_SHA..$head"; } | sed '/^$/d' | sort -u)
+          else
+            head=$GITHUB_SHA
+            paths=$(git ls-tree -r --name-only "$head")
+          fi
+          if git ls-tree -r "$head" | grep -q '^160000 '; then
+            echo "::error::submodules are not allowed"; exit 1
+          fi
+          bad=$(grep -vE "$ALLOWED" <<<"$paths" || true)
+          if [ -n "$bad" ]; then
+            echo "::error::paths outside the allow-list:"; sed 's/^/  /' <<<"$bad"; exit 1
+          fi
+          echo "guard: OK ($(grep -c . <<<"$paths") paths)"
