@@ -26,24 +26,38 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # The PR's commits, into a separate folder: only listed with git below, never executed. Done by
+      # actions/checkout because a bare `git fetch` has no credentials (persist-credentials: false),
+      # which fails on a private repo.
+      - name: Fetch the PR head (read only)
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+          path: pr
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: Only allowed paths
         env:
           EVENT: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           ALLOWED: '^(README\.md|LICENSE|CHANGELOG\.md|(default|vscode)-background/[A-Za-z0-9._-]+\.(xml|txt)|media/[A-Za-z0-9._-]+\.png|\.github/workflows/(guard|release)\.yml)$'
         run: |
           set -euo pipefail
           if [ "$EVENT" = pull_request_target ]; then
-            git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/pr/head"
-            head=refs/pr/head
+            repo=pr
+            head=$(git -C pr rev-parse --verify HEAD)
+            git -C pr cat-file -e "$BASE_SHA^{commit}" # the base must be in the fetched history
             # every path any commit of the PR touches, not just the final tree
-            paths=$( { git ls-tree -r --name-only "$head"; git log -m --format= --name-only --no-renames "$BASE_SHA..$head"; } | sed '/^$/d' | sort -u)
+            paths=$( { git -C pr ls-tree -r --name-only "$head"; git -C pr log -m --format= --name-only --no-renames "$BASE_SHA..$head"; } | sed '/^$/d' | sort -u)
           else
+            repo=.
             head=$GITHUB_SHA
             paths=$(git ls-tree -r --name-only "$head")
           fi
-          if git ls-tree -r "$head" | grep -q '^160000 '; then
+          [ -n "$paths" ] || { echo "::error::no paths found — refusing to pass an empty listing"; exit 1; }
+          if git -C "$repo" ls-tree -r "$head" | grep -q '^160000 '; then
             echo "::error::submodules are not allowed"; exit 1
           fi
           bad=$(grep -vE "$ALLOWED" <<<"$paths" || true)
