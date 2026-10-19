@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security issue
+    url: https://github.com/Aswertus/cisco-rdm-highlighting/security/advisories/new
+    about: Report a vulnerability privately. Please don't open a public issue for it.
+  - name: 🧩 The VS Code extension
+    url: https://github.com/Aswertus/cisco-lsp/issues/new/choose
+    about: Completions, hover, diagnostics or the editor colours — that's the Cisco IOS/IOS-XE IntelliSense repo.

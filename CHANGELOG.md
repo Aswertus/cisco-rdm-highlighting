@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.3]
+
+No rule changes. Issue forms for wrong or missing colours, setup problems and ideas, with a private
+route for security reports; closed issues are locked after 30 days.
+
 ## [0.1.2]
 
 No rule changes. Repository housekeeping: the pull-request check now also accepts issue forms
