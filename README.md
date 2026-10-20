@@ -120,7 +120,7 @@ Connect to a switch and run `show running-config`.
 ## Credits
 
 The rule set started from
-[alalexiev's Cisco IOS / IOS-XE / IOS-XR highlighting profile](https://forum.devolutions.net/topics/35196)
+[alalexiev's Cisco IOS / IOS-XE / IOS-XR highlighting profile](https://forum.devolutions.net/topics/35196/cisco-ios--iosxe--iosxr-syntax-highlighting)
 on the Devolutions forum (2021). Its word lists were repaired and extended with the VS Code
 extension's keyword set.
 
