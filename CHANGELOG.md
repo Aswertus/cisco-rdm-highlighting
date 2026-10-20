@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.5]
+
+No rule changes. Fixed the link to the original forum thread in the README (the short form returned
+404).
+
 ## [0.1.4]
 
 No rule changes. The release zip now includes `media/`, so the README inside it shows its screenshots.
