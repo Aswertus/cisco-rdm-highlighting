@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.6]
+
+No rule changes. The pull-request check now also refuses symlinks, executables and submodules in
+every commit of a pull request, not just in its final state.
+
 ## [0.1.5]
 
 No rule changes. Fixed the link to the original forum thread in the README (the short form returned
