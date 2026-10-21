@@ -57,9 +57,20 @@ jobs:
             paths=$(git ls-tree -r --name-only "$head")
           fi
           [ -n "$paths" ] || { echo "::error::no paths found — refusing to pass an empty listing"; exit 1; }
-          if git -C "$repo" ls-tree -r "$head" | grep -q '^160000 '; then
-            echo "::error::submodules are not allowed"; exit 1
+          # Regular files only (no submodules, symlinks or executables) — in every commit of a PR,
+          # since a rebase merge keeps each of them, not just the final tree.
+          if [ "$EVENT" = pull_request_target ]; then
+            commits=$(git -C pr rev-list "$BASE_SHA..$head")
+          else
+            commits=$head
           fi
+          for c in $commits; do
+            listing=$(git -C "$repo" ls-tree -r "$c") # a failed listing stops the job (set -e), never passes
+            odd=$(grep -v '^100644 blob ' <<<"$listing" || true)
+            if [ -n "$odd" ]; then
+              echo "::error::only regular files are allowed (commit $c):"; sed 's/^/  /' <<<"$odd"; exit 1
+            fi
+          done
           bad=$(grep -vE "$ALLOWED" <<<"$paths" || true)
           if [ -n "$bad" ]; then
             echo "::error::paths outside the allow-list:"; sed 's/^/  /' <<<"$bad"; exit 1
