@@ -1,0 +1,74 @@
+name: Pages
+
+# Deploys the colour-editor page with GitHub Pages through Actions. The page is a committed build
+# (src/build.js writes it next to the RDM files), so this uploads a folder and builds nothing.
+# Public repo: on every push to main, i.e. every release, from site/. Private dev repo: only when
+# started by hand (scripts/pages-preview.sh on <branch>), from public/site/; the deploy step is skipped
+# while Pages is disabled there, so a run never goes red. A Pages site of the dev repo is public while
+# it is on: switch it off after testing (scripts/pages-preview.sh off).
+# The dev-repo root and public/.github/workflows/ hold identical copies (test-pinned).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'Aswertus/cisco-rdm-highlighting' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Find the page
+        id: page
+        run: |
+          if [ -f site/index.html ]; then echo "path=site" >> "$GITHUB_OUTPUT"
+          elif [ -f public/site/index.html ]; then echo "path=public/site" >> "$GITHUB_OUTPUT"
+          else echo "::error::no site/index.html (public repo) or public/site/index.html (dev repo)"; exit 1
+          fi
+
+      - name: Upload the page
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ${{ steps.page.outputs.path }}
+
+  deploy:
+    needs: build
+    if: github.repository == 'Aswertus/cisco-rdm-highlighting' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Is Pages enabled on this repository?
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # The public repo always deploys (its site stays up). On the dev repo only a 404 means "off";
+        # any other answer fails the run rather than silently skipping the deploy.
+        run: |
+          if [ "$GITHUB_REPOSITORY" = 'Aswertus/cisco-rdm-highlighting' ]; then
+            echo "on=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if out=$(gh api "repos/$GITHUB_REPOSITORY/pages" 2>&1); then
+            echo "on=true" >> "$GITHUB_OUTPUT"
+          elif grep -q 'HTTP 404' <<<"$out"; then
+            echo "on=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages is disabled on this repository; the page was built but not deployed."
+          else
+            echo "::error::could not tell whether Pages is enabled: $out"; exit 1
+          fi
+
+      - name: Deploy
+        if: steps.pages.outputs.on == 'true'
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

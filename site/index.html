@@ -1,0 +1,1137 @@
+<title>Cisco RDM Colour Editor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a settings column beside a large terminal preview; file report and export span below. Stacks on phones. */
+:root {
+  --bg: #F3F5F8;
+  --surface: #FFFFFF;
+  --fg: #18202B;
+  --muted: #5A6577;
+  --line: #D9DEE6;
+  --accent: #2E5FA8;
+  --accent-soft: #E3EBF7;
+  --warn: #A3530B;
+  --warn-soft: #FBEBDC;
+  --ok: #2F7D3A;
+  --rx-q: #8E3AB8;
+  --bad: #B3261E;
+  --rx-a: #00796B;
+  --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+  --term: Consolas, "Cascadia Mono", "IBM Plex Mono", "DejaVu Sans Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161C; --surface: #1A2028; --fg: #E4E9F0; --muted: #94A0B2; --line: #2C3542;
+  --accent: #7FA8E0; --accent-soft: #1F2C3F; --warn: #F2A35E; --warn-soft: #3A2716; --ok: #7BC985; --rx-q: #C594C5; --rx-a: #5FB3B3; --bad: #FF6B6B; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161C; --surface: #1A2028; --fg: #E4E9F0; --muted: #94A0B2; --line: #2C3542;
+  --accent: #7FA8E0; --accent-soft: #1F2C3F; --warn: #F2A35E; --warn-soft: #3A2716; --ok: #7BC985; --rx-q: #C594C5; --rx-a: #5FB3B3; --bad: #FF6B6B; color-scheme: dark }
+
+* { box-sizing: border-box }
+/* an author display rule (the picker is a grid) would beat the browser's own [hidden] rule; the artifact
+   viewer adds this itself, a plain page does not, and then the picker never closed (owner, 28.10.2026) */
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 20px; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -0.01em }
+h1 small { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 8px }
+.repo { font-size: 13px; color: var(--accent); text-decoration: none }
+.repo:hover { text-decoration: underline }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; margin: 0 0 10px }
+h3 { font-size: 12px; font-weight: 600; margin: 4px 6px 4px; color: var(--muted) }
+
+.grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0 }
+.side { display: flex; flex-direction: column; gap: 16px }
+
+.presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.preset { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 8px; border: 1px solid var(--line);
+  border-radius: 6px; background: transparent; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; min-width: 0 }
+.preset:hover { border-color: var(--accent) }
+.preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft) }
+.preset .dots { display: flex; flex-shrink: 0; border-radius: 4px; overflow: hidden; padding: 3px; gap: 2px }
+.preset .dots i { width: 6px; height: 12px; border-radius: 1px; display: block }
+.preset span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.open-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line) }
+.linkbtn { font: inherit; font-size: 13px; background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px }
+.small { font-size: 12px; color: var(--muted); margin: 6px 0 0 }
+
+.roles { display: flex; flex-direction: column; gap: 2px }
+.role { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto auto 76px; gap: 8px; align-items: center; padding: 6px; border-radius: 6px }
+.bu { display: inline-flex; border: 1px solid var(--line); border-radius: 5px; overflow: hidden }
+.tg { width: 26px; height: 26px; border: none; padding: 0; background: transparent; color: var(--muted); font: 13px/1 var(--term); cursor: pointer }
+.tg + .tg { border-left: 1px solid var(--line) }
+.tg[data-t="b"] { font-weight: 700 }
+.tg[data-t="u"] { text-decoration: underline; text-underline-offset: 2px }
+.tg:hover { color: var(--fg); background: var(--accent-soft) }
+.tg[aria-pressed="true"] { background: var(--accent); color: var(--surface) }
+.bu.none { visibility: hidden }
+.role:hover, .role.active { background: var(--accent-soft) }
+.sw { width: 34px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 5px; cursor: pointer; box-shadow: inset 0 0 0 2px var(--surface) }
+.sw:hover { border-color: var(--accent) }
+.sw[aria-expanded="true"] { outline: 2px solid var(--accent); outline-offset: 1px }
+
+/* colour picker popover */
+.picker { position: fixed; z-index: 50; width: 272px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(10, 20, 35, .22), 0 2px 6px rgba(10, 20, 35, .12); padding: 12px; display: grid; gap: 10px }
+.picker.sheet { left: max(8px, env(safe-area-inset-left, 0px)) !important; right: max(8px, env(safe-area-inset-right, 0px)); width: auto;
+  top: auto !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)) }
+.pk-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500 }
+.pk-head span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.pk-x { font: inherit; font-size: 18px; line-height: 1; width: 28px; height: 28px; border: none; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer }
+.pk-x:hover { background: var(--accent-soft); color: var(--fg) }
+.pk-sv { position: relative; height: 150px; border-radius: 6px; cursor: crosshair; touch-action: none;
+  background-image: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent) }
+.pk-hue { position: relative; height: 14px; border-radius: 7px; cursor: pointer; touch-action: none;
+  background: linear-gradient(to right, #f00, #ff0 16.7%, #0f0 33.3%, #0ff 50%, #00f 66.7%, #f0f 83.3%, #f00) }
+.pk-dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.5), inset 0 0 0 1px rgba(0,0,0,.3); pointer-events: none }
+.pk-thumb { position: absolute; top: -2px; width: 8px; height: 18px; margin-left: -4px; border-radius: 3px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.45); pointer-events: none }
+.pk-sv:focus-visible, .pk-hue:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.pk-row { display: flex; align-items: center; gap: 8px }
+.pk-cmp { display: flex; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); flex-shrink: 0 }
+.pk-cmp button { width: 26px; height: 26px; border: none; padding: 0; cursor: pointer }
+.pk-cmp i { display: block; width: 26px; height: 26px }
+#pk-hex { width: 84px; font: 13px var(--mono); padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); color: var(--fg); text-transform: uppercase }
+.pk-cr { font-size: 12px; color: var(--muted); margin-left: auto; text-align: right; line-height: 1.25 }
+.pk-cr.bad { color: var(--warn) }
+.pk-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; margin-bottom: -4px }
+.pk-sws { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px }
+.pk-sws button { aspect-ratio: 1; max-width: 100%; border: 1px solid var(--line); border-radius: 4px; padding: 0; cursor: pointer }
+.pk-sws button:hover { transform: scale(1.15) }
+.pk-sws button[aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px }
+.pk-prev { font: 12.5px/1.4 var(--term); padding: 6px 8px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.pk-actions { display: flex; justify-content: flex-end; gap: 8px }
+.role .lbl { min-width: 0 }
+.role .lbl b { display: block; font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.role .lbl em { display: block; font-style: normal; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.role .lbl code { font: 11.5px var(--mono) }
+.role input[type=text] { width: 76px; font: 12px var(--mono); padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); color: var(--fg); text-transform: uppercase }
+.role .lc { grid-column: 2 / 5; font-size: 11.5px; color: var(--warn); margin-top: -4px }
+.role .lc .linkbtn { font-size: 11.5px }
+.sep { height: 1px; background: var(--line); margin: 8px 0 }
+
+.term { border-radius: 8px; overflow: hidden; border: 1px solid var(--line) }
+.term-bar { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: #2B2F36; color: #C9CED6; font-size: 12px }
+.term-bar .tab { background: #3A3F48; padding: 3px 10px; border-radius: 4px 4px 0 0; color: #E8EBF0; white-space: nowrap }
+.term-bar .hint { margin-left: auto; color: #8A929E; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+/* the preview rides along while the settings column scrolls, and stops at its end (sticky inside the grid) */
+.preview { min-width: 0; position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)) }
+pre.screen { position: relative; margin: 0; padding: 12px 14px; font: 13.5px/1.42 var(--term); overflow: auto; white-space: pre; tab-size: 8;
+  max-height: calc(100vh - 32px - 34px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 32px - 34px - env(safe-area-inset-top, 0px)) }
+@media (max-width: 900px) { .preview { position: static } pre.screen { max-height: 60vh } }
+pre.screen span[data-i] { cursor: pointer; transition: opacity .15s }
+pre.screen.focus span:not(.on) { opacity: .28 }
+pre.screen.focus span.on { text-decoration: underline; text-underline-offset: 3px }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12px; padding: 4px 8px; border-radius: 4px; white-space: nowrap }
+
+.report { margin-top: 20px }
+.rep-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 12px }
+.rep-head h2 { margin: 0 }
+.rep-file { font: 13px var(--mono) }
+.rep-head .linkbtn { margin-left: auto }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px }
+.chip { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line) }
+.chip.ok { color: var(--ok) }
+.chip.att { color: var(--warn); border-color: var(--warn); background: var(--warn-soft) }
+.decisions { display: grid; gap: 8px }
+.dec { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px }
+@media (max-width: 640px) { .dec { grid-template-columns: minmax(0, 1fr) } }
+.dec b { font-weight: 500 }
+.dec p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px }
+.dec .diff { grid-column: 1 / -1; font: 11.5px/1.5 var(--mono); background: var(--bg); padding: 6px 8px; border-radius: 4px; overflow-x: auto; white-space: pre }
+.dec .diff ins { text-decoration: none; color: var(--ok); font-weight: 500 }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden }
+.seg button { font: inherit; font-size: 12.5px; padding: 5px 10px; border: none; background: transparent; color: var(--fg); cursor: pointer }
+.seg button + button { border-left: 1px solid var(--line) }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface) }
+.rep-note { margin: 12px 0 0; color: var(--muted); font-size: 12.5px }
+
+.export { margin-top: 20px }
+.ex-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap }
+.tabs button { font: inherit; font-size: 13px; padding: 6px 12px; border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 6px; cursor: pointer }
+.tabs button[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent) }
+.actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap }
+.btn { font: inherit; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface) }
+.btn.ghost { background: transparent; color: var(--accent) }
+button:focus-visible, input:focus-visible, label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px }
+.ex-note { color: var(--muted); font-size: 13px; margin: 0 0 10px; max-width: 75ch }
+.ex-note.warn { color: var(--warn) }
+textarea { width: 100%; height: 220px; font: 12px/1.45 var(--mono); padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); resize: vertical; white-space: pre }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 6px; font-size: 13px; z-index: 30; max-width: calc(100vw - 32px) }
+.steps { margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; display: grid; gap: 4px }
+.steps b { color: var(--fg); font-weight: 500 }
+.dropping::after { content: "Drop your .xml to open it"; position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; font-size: 18px; font-weight: 500;
+  color: var(--accent); background: color-mix(in srgb, var(--bg) 85%, transparent); border: 3px dashed var(--accent) }
+
+/* ---- views: Colours (default) and Rules ---- */
+.tabbar { margin: -8px 0 20px }
+.tabbar button[aria-selected="true"] { font-weight: 500 }
+.role .pen { width: 26px; height: 26px; border: none; background: transparent; color: var(--muted); border-radius: 5px; cursor: pointer; padding: 0; display: grid; place-items: center }
+.role .pen:hover { background: var(--accent-soft); color: var(--accent) }
+.role .pen.none { visibility: hidden; pointer-events: none } /* keeps its grid column, the background row has no rules */
+.rx-grid { display: grid; grid-template-columns: 300px minmax(0, 1fr) 290px; gap: 20px; align-items: start }
+@media (max-width: 1180px) { .rx-grid { grid-template-columns: 300px minmax(0, 1fr) } .rx-ref { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px } }
+@media (max-width: 900px) { .rx-grid { grid-template-columns: minmax(0, 1fr) } .rx-ref { grid-template-columns: minmax(0, 1fr) } }
+.rx-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px }
+.rx-list-head h2 { margin: 0 }
+.rx-filter { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; padding: 6px 8px; background: var(--accent-soft); border-radius: 6px }
+.rx-items { overflow: auto; margin: 0 -6px }
+.rx-ref { overflow: auto; min-width: 0 }
+pre.screen#rx-screen { max-height: none }
+.rx-item { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 5px 8px; border-radius: 6px; cursor: pointer }
+.rx-item:hover { background: var(--accent-soft) }
+.rx-item[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 2px 0 0 var(--accent) }
+.rx-item .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line) }
+.rx-item .nm { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0 }
+.rx-item .nm small { color: var(--muted); font: 11px var(--mono); margin-right: 6px }
+.rx-item .bd { font-size: 11px; color: var(--warn); white-space: nowrap }
+.rx-item .bd.yours { color: var(--ok) }
+.rx-item.off .nm { color: var(--muted); text-decoration: line-through }
+.rx-item { grid-template-columns: 14px 12px minmax(0, 1fr) auto }
+.rx-item .grip { color: var(--line); cursor: grab; font: 14px/1 var(--mono); letter-spacing: -2px; user-select: none }
+.rx-item:hover .grip { color: var(--muted) }
+.rx-item.dragging { opacity: .35 }
+.rx-item.drop-before { box-shadow: inset 0 2px 0 var(--accent) }
+.rx-item.drop-after { box-shadow: inset 0 -2px 0 var(--accent) }
+.rx-item[aria-pressed="true"].drop-before { box-shadow: inset 2px 0 0 var(--accent), inset 0 2px 0 var(--accent) }
+.rx-item[aria-pressed="true"].drop-after { box-shadow: inset 2px 0 0 var(--accent), inset 0 -2px 0 var(--accent) }
+.rx-editor { display: grid; gap: 10px; margin-bottom: 16px }
+.rx-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center }
+.rx-top input { font: inherit; font-size: 13.5px; font-weight: 500; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); min-width: 0 }
+.rx-colour { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap }
+.rx-colour select { font: inherit; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg) }
+.rx-colour .sw { width: 26px; height: 22px }
+.rx-re { display: flex; align-items: flex-start; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; background: var(--bg) }
+.rx-re:focus-within { outline: 2px solid var(--accent); outline-offset: 1px }
+/* wraps and grows with the pattern; it stays one line of regex (Enter and pasted line breaks are dropped).
+   The textarea is transparent over a mirror <pre> with the same font and wrapping that carries the colours. */
+.rx-code { position: relative; flex: 1; min-width: 0 }
+.rx-code textarea, .rx-mirror { font: 13.5px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; padding: 0; margin: 0; border: none; width: 100%; display: block }
+.rx-code textarea { position: relative; z-index: 1; background: transparent; color: transparent; caret-color: var(--fg); outline: none; resize: none; overflow: hidden; height: auto }
+.rx-code textarea::placeholder { color: var(--muted) }
+.rx-code textarea::selection { background: color-mix(in srgb, var(--accent) 30%, transparent) }
+.rx-mirror { position: absolute; inset: 0; pointer-events: none; color: var(--fg); overflow: hidden }
+.rx-mirror .grp { color: var(--accent); font-weight: 500 }
+.rx-mirror .cls { color: var(--warn) }
+.rx-mirror .esc { color: var(--ok) }
+.rx-mirror .qnt { color: var(--rx-q); font-weight: 500 }
+.rx-mirror .alt { color: var(--rx-a); font-weight: 600 }
+.rx-mirror .anc { color: var(--rx-a) }
+.rx-mirror .match { outline: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: 2px }
+.rx-slash { color: var(--accent); font: 16px/1.25 var(--mono) }
+.rx-flags { padding-top: 1px }
+.rx-flags { display: flex; gap: 4px; margin-left: 4px }
+.flag { font: 12px var(--mono); border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--muted); padding: 2px 7px; cursor: pointer }
+.flag[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft) }
+.rx-status { font-size: 12.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+.rx-status.bad { color: var(--warn) }
+.rx-status.invalid { color: var(--bad); font-weight: 500 }
+.rx-re.invalid { border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad) }
+.rx-item .bd.invalid { color: var(--bad) }
+.rx-status .mv { display: flex; gap: 4px }
+.rx-status .mv button, .rx-status .linkbtn { font-size: 12.5px }
+.rx-status .mv button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 4px; padding: 1px 7px; cursor: pointer }
+.rx-ref .panel + .panel { margin-top: 16px }
+.rx-ref h3 { margin: 10px 0 4px }
+.rx-ref-list button { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; width: 100%; text-align: left; padding: 4px 6px; border: none; background: transparent; color: var(--fg); font: inherit; font-size: 12.5px; border-radius: 4px; cursor: pointer; align-items: baseline }
+.rx-ref-list button:hover { background: var(--accent-soft) }
+.rx-ref-list code { font: 12px var(--mono); color: var(--ok); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px }
+.rx-match { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; font-size: 12.5px; align-items: baseline }
+.rx-match small { color: var(--muted); font: 11px var(--mono) }
+.rx-match code { font: 12px var(--mono) }
+.rx-match .lost { color: var(--warn) }
+pre.screen span.lost { text-decoration: underline dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; opacity: .8 !important }
+.small { font-size: 12px; color: var(--muted) }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Cisco RDM Colour Editor <small>for cisco-rdm-highlighting</small></h1>
+    <a class="repo" href="https://github.com/Aswertus/cisco-rdm-highlighting">cisco-rdm-highlighting on GitHub</a>
+  </header>
+
+  <div class="tabs tabbar" role="tablist" aria-label="View">
+    <button role="tab" id="tab-colours" aria-selected="true">Colours</button>
+    <button role="tab" id="tab-rules" aria-selected="false">Rules</button>
+  </div>
+
+  <div id="view-colours">
+  <div class="grid">
+    <div class="side">
+      <section class="panel" aria-labelledby="h-presets">
+        <h2 id="h-presets">Start from a preset</h2>
+        <div class="presets" id="presets"></div>
+        <div class="open-row">
+          <label class="btn ghost" for="file">Open your .xml</label>
+          <input type="file" id="file" accept=".xml,text/xml,application/xml" hidden>
+          <button class="linkbtn" id="example">Try an example file</button>
+        </div>
+        <p class="small">Your file stays in this browser. Nothing is uploaded anywhere.</p>
+      </section>
+      <section class="panel" aria-labelledby="h-colours">
+        <h2 id="h-colours">Colours</h2>
+        <div class="roles" id="roles"></div>
+        <div id="extra"></div>
+      </section>
+    </div>
+
+    <section aria-label="Preview" class="preview">
+      <div class="term">
+        <div class="term-bar"><span class="tab">DEMO-ACCESS-01</span><span>SSH</span><span class="hint">Click a coloured word to edit its colour</span></div>
+        <pre class="screen" id="screen"></pre>
+      </div>
+    </section>
+  </div>
+  </div>
+
+  <div id="view-rules" hidden>
+  <div class="rx-grid">
+    <section class="panel rx-list" aria-labelledby="h-rules">
+      <div class="rx-list-head"><h2 id="h-rules">Rules <span class="small" style="text-transform:none;letter-spacing:0">· first match wins</span></h2><button class="btn ghost" id="rx-add" style="white-space:nowrap">+ Add rule</button></div>
+      <div class="rx-filter" id="rx-filter" hidden></div>
+      <div class="rx-items" id="rx-items"></div>
+    </section>
+
+    <section class="rx-main" aria-label="Rule editor">
+      <div class="panel rx-editor">
+        <div class="rx-top">
+          <input id="rx-name" aria-label="Rule name" placeholder="Rule name">
+          <div class="rx-colour">Colour <select id="rx-role" aria-label="Colour group"></select>
+            <button class="sw" id="c-rx" aria-label="Change this rule’s colour" aria-haspopup="dialog" aria-expanded="false" title="Pick a colour for this rule alone"></button>
+            <span class="small" id="rx-own-note" hidden>own colour · fine-tune it in Colours too</span></div>
+        </div>
+        <div class="rx-re"><span class="rx-slash">/</span><span class="rx-code"><pre class="rx-mirror" id="rx-mirror" aria-hidden="true"></pre><textarea id="rx-re" rows="1" aria-label="Regular expression" spellcheck="false" autocomplete="off" placeholder="regular expression (.NET)"></textarea></span><span class="rx-slash">/</span>
+          <div class="rx-flags"><button class="flag" id="rx-cs" title="Case-sensitive" aria-pressed="true">Aa</button><button class="flag" id="rx-word" title="Whole words only (RDM’s own option, for plain text patterns)" aria-pressed="false">ab</button></div></div>
+        <div class="rx-status" id="rx-status"></div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><span class="tab">DEMO-ACCESS-01</span><span>SSH</span><span class="hint" title="Underlined: this rule paints it. Dashed: an earlier rule got there first. Click a word to open its rule.">underlined: this rule · dashed: an earlier rule won · click a word to open its rule</span></div>
+        <pre class="screen" id="rx-screen"></pre>
+      </div>
+    </section>
+
+    <aside class="rx-ref">
+      <section class="panel" aria-labelledby="h-matches">
+        <h2 id="h-matches">Match information</h2>
+        <div id="rx-matches"></div>
+      </section>
+      <section class="panel" aria-labelledby="h-ref">
+        <h2 id="h-ref">Quick reference</h2>
+        <p class="small" style="margin:0 0 4px">Click to insert at the cursor.</p>
+        <h3>From this profile</h3>
+        <div class="rx-ref-list" id="rx-blocks"></div>
+        <h3>Tokens that work in RDM and in this preview</h3>
+        <div class="rx-ref-list" id="rx-tokens"></div>
+        <h3>.NET only</h3>
+        <p class="small" style="margin:0">Inline options <code>(?i)</code> <code>(?s)</code> <code>(?x)</code>, atomic groups <code>(?&gt;…)</code>, conditionals, <code>\A</code> <code>\Z</code> <code>\G</code>, class subtraction <code>[a-z-[aeiou]]</code>: RDM runs them, this page cannot. Such a rule is kept in your file as is and marked “not in preview”.</p>
+      </section>
+    </aside>
+  </div>
+  </div>
+
+  <section class="panel report" id="report" aria-labelledby="h-report" hidden>
+    <div class="rep-head">
+      <h2 id="h-report">Your file</h2>
+      <span class="rep-file" id="rep-file"></span>
+      <button class="linkbtn" id="reset">Close file and start over</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="decisions" id="decisions"></div>
+    <p class="rep-note">Rules are matched by name, or by their pattern if you renamed them. Your own rules stay where they were in the list, because in RDM the first matching rule wins.</p>
+  </section>
+
+  <section class="panel export" aria-labelledby="h-export">
+    <div class="ex-head">
+      <h2 id="h-export" style="margin:0">Your files</h2>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-xml" aria-selected="true">Highlighting rules (.xml)</button>
+        <button role="tab" id="tab-txt" aria-selected="false">Terminal colours (.txt)</button>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="copy">Copy</button>
+        <button class="btn" id="dl">Download</button>
+      </div>
+    </div>
+    <p class="ex-note" id="ex-note"></p>
+    <textarea id="out" readonly spellcheck="false" aria-label="File content"></textarea>
+    <div class="sep"></div>
+    <h2>Import into RDM</h2>
+    <ol class="steps">
+      <li><b>File → Settings → Entry Types → Sessions → Terminal → Syntax highlighting</b>: new profile, then import the .xml into its rule list. Importing adds below existing rules, so start from an empty profile.</li>
+      <li id="step-colours"><b>… → Terminal → Colors</b>: Override (single profile), import the .txt so the terminal background matches.</li>
+      <li>Set the profile as <b>Default profile</b>.</li>
+    </ol>
+  </section>
+</div>
+<div class="picker" id="picker" role="dialog" aria-labelledby="pk-title" hidden>
+  <div class="pk-head"><span id="pk-title"></span><button class="pk-x" id="pk-close" aria-label="Close">×</button></div>
+  <div class="pk-sv" id="pk-sv" tabindex="0" role="slider" aria-label="Saturation and brightness, use arrow keys"><div class="pk-dot" id="pk-dot"></div></div>
+  <div class="pk-hue" id="pk-hue" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360"><div class="pk-thumb" id="pk-thumb"></div></div>
+  <div class="pk-row">
+    <span class="pk-cmp"><button id="pk-old" title="Back to the colour before" aria-label="Back to the colour before"></button><i id="pk-new"></i></span>
+    <input id="pk-hex" maxlength="7" aria-label="Hex colour" spellcheck="false">
+    <span class="pk-cr" id="pk-cr"></span>
+  </div>
+  <div class="pk-prev" id="pk-prev"></div>
+  <div class="pk-label">In your colours</div><div class="pk-sws" id="pk-pal"></div>
+  <div class="pk-label">Terminal-friendly</div><div class="pk-sws" id="pk-sug"></div>
+  <div class="pk-actions"><button class="btn ghost" id="pk-cancel">Cancel</button><button class="btn" id="pk-ok">Done</button></div>
+</div>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const RULES = [["Banner art (plain)","plain","^(?!\\*[A-Z][a-z]{2}\\s|%[A-Z]|\\s*--More--)[^\\w\\s!].*"],["Banner delimiter ^C (plain)","plain","^\\^C\\s*$"],["Comment line","green","^\\s*!.*"],["device-tracking line (notice)","orange","^.*\\b(?:device-tracking attach-policy|ip device-tracking)\\b.*$"],["MAC address","value","\\b(?:(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}|(?:[0-9A-Fa-f]{4}\\.){2}[0-9A-Fa-f]{4})\\b"],["IPv4 address","value","\\b(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(?:/(?:3[0-2]|[12]?\\d)|:\\d{1,5})?\\b"],["IPv6 address","value","(?\u003c![\\w:])(?=[0-9A-Fa-f:]*[A-Fa-f][0-9A-Fa-f:]*|[0-9A-Fa-f:]*::)(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?:/\\d{1,3})?(?![\\w:])"],["snmp-server line","teal","(?\u003c=^\\s*|^[\\w.-]+(?:\\([\\w-]+\\))?[#>]\\s*)(?:no\\s+)?snmp-server\\b.*"],["Name: class-map / policy-map / class","value","(?\u003c=\\b(?:class-map|policy-map|class)\\s(?:.*\\s)?)\\S+$"],["Name: after keyword","value","(?\u003c=\\b(?:hostname|username|name|role|neighbor|peer-session|peer-policy|peer-group|route-map|prefix-list|pool|policy-list|traffic-filter|community|ssid|access-class|access-list|access-group|object-group|vrf|use-vrf|crypto\\smap|ipsec\\sprofile|isakmp\\sprofile|keyring|key\\schain|event\\smanager\\s(?:applet|environment|run)|ip\\sdomain[\\s-]name|transform-set)\\s(?:(?:extended|standard|resequence|name|service|network|forwarding|definition|context|member|ipv4|ipv6|seq|description)\\s)?)(?!(?:extended|standard|resequence|name|service|network|forwarding|definition|context|member|ipv4|ipv6|seq|description)\\b)[^\\s,]+"],["Password / secret / key-string","value","(?\u003c=\\b(?:(?:password|secret)\\s\\d+|key-string(?:\\s\\d+)?)\\s)\\S+"],["Headers and structure words","green","(?\u003c![\\w-])(?:Device|ID|Local|Intrfce|Holdtme|Capability|Platform|Port|Address|Interface|Hold|Uptime|SRTT|RTO|Seq|Neighbor|MsgRcvd|MsgSent|TblVer|InQ|OutQ|Up/Down|State/PfxRcd|interface|IP-Address|Method|OK\\?|Status|Protocol|aaa|VLAN|Vlan|vlan|description|MTU|BW|DLY)(?![\\w-])"],["Good state","green","(?:(?\u003c=\\bon-)|(?\u003c![\\w-]))(?:SUCCESS|[Ss]uccess(?:ful)?)(?![\\w-])|(?\u003c![\\w-])(?:yes|permit|enabled?|running|passed|Complete|remark|on|connected|bits/sec|packets/sec)(?![\\w-])|\\[OK\\]|down->up|(?\u003c![\\w-])up(?![\\w-])|!+|\\*{2,}|#{3,}|@+$"],["ACL / policy keywords","purple","(?\u003c![\\w-])(?:access-(?:lists?|class|group)|use-acl|prefix-list|time-range|object-group|(?:class|route)-map|macsec-policy|route-policy|prefix-set)(?![\\w-])"],["Notice: disabled, err-disabled","orange","(?\u003c![\\w-])(?:disabled|err-disabled)(?![\\w-])"],["Warning / bad state","red","(?:(?\u003c=\\bon-)|(?\u003c![\\w-]))(?:[Ff]ail(?:ure|ed|s)?|FAIL(?:URE|ED)?)(?![\\w-])|(?\u003c![\\w-])(?:invalid|reload|no|notconnect(?:ed)?|NOT PRESENT|administratively(?:\\sdown)?|shutdown|never|deny|down|not|initializing|Off|telnet|half-duplex|err-disabled|disabled|inhibit|erase|remove|delete)(?![\\w-])|_ERR:|up->down|\\[confirm\\]|\\(yes/no\\)|\\[yes/no\\]|--More--|Building configuration"],["Option keywords (editor set)","purple","(?\u003c![-\\w])(?:protocol-vlan|mac-vlan|dot1q-tunnel|dot1[Qq]|access|trunk|dynamic\\s(?:auto|desirable)|add|remove|except|allowed|native|any|all|permit|deny|[Uu]p|[Dd]own|[Dd]eleted|[Aa]dministratively(?:-down)?|match-any|match-all|in|out|input|output|inside|outside|enabled?|disabled?|shutdown)(?![-\\w])"],["STP keywords","purple","(?\u003c![\\w-])(?:portfast)(?![\\w-])"],["AAA words","teal","(?\u003c![\\w-])(?:authentication|authorization|accounting)(?![\\w-])"],["Protocols","teal","(?\u003c![\\w-])(?:ftp|tcp|udp|tftp|scp|ssh|ntp|snmp(?:-server)?|inspect|icmp|router|isis|eigrp|bgp|ospf|rip|gre|hsrp|https?|vrf|voice)(?![\\w-])"],["Interface name","yellow","\\b(?:(?:[Ff]ast|(?:[Ff]ive|[Tt]en|[Tt]wenty[Ff]ive|[Ff](?:orty|ifty)|(?:[Tt]wo)?[Hh]undred)?[Gg](?:ig)?(?:abit)?)[Ee](?:th(?:ernet)?)?|[Ee]th(?:ernet)?|Fa|Gi|Te|Fo|Fi|Tw|Hu|App[Gg](?:ig)?(?:abit)?[Ee](?:th(?:ernet)?)?|[Ss]erial|[Cc]ellular|Management|[Mm]gmt|[Ll]oopback|Lo|[Tt]unnel|Tu|VLAN|[Vv]lan|Vl|[Nn]ull|[Vv]irtual-[Tt]emplate|[Dd]ialer|[Aa]sync|BRI|BVI|BDI|[Bb]ridge-?[Dd]omain|[Pp]ort-?[Cc]hannel|Po|[Dd]ot11[Rr]adio|LISP|[Ww]lan|[Vv]irtual-[Aa]ccess|[Bb]luetooth|[Nn][Vv][Ii]|[Vv][Mm][Ii]|[Vv]asi[Ll]eft|[Vv]asi[Rr]ight)(?:\\d+[./])*\\d+(?:\\.\\d+)?(?:-\\d+)?\\b"],["Interface after keyword","yellow","(?\u003c=\\b[Ii]nterface\\s+)(?!range\\b)[A-Za-z][^\\s,]*\\d[^\\s,]*"],["Lines (con, vty, aux)","yellow","(?\u003c![\\w-])(?:line|console|con|vty|aux)(?![\\w-])"],["Section word: address-family","yellow","(?\u003c![\\w-])(?:address-family)(?![\\w-])"]];
+const DEMO = "DEMO-ACCESS-01#show running-config\nBuilding configuration...\n\nCurrent configuration : 2184 bytes\n!\nversion 17.15\nservice timestamps log datetime msec localtime show-timezone\nservice password-encryption\n!\nhostname DEMO-ACCESS-01\n!\nvrf definition MGMT\n rd 64500:10\n !\n address-family ipv4\n exit-address-family\n!\naaa new-model\naaa authentication login default local\naaa authorization exec default local\n!\nusername admin privilege 15 secret 9 ********\n!\nlogin on-failure log\nlogin on-success log\n!\nerrdisable recovery cause bpduguard\nerrdisable recovery cause link-monitor-failure\nerrdisable recovery interval 300\n!\nip device tracking maximum 10\ndevice-tracking policy IPDT-POLICY\n security-level glean\n!\nclass-map match-any VOICE\n match dscp ef\n!\npolicy-map QOS-IN\n class VOICE\n  set dscp ef\n!\nbanner motd ^C\n+--------------------------------------------------+\n|           DEMO-ACCESS-01  ·  Lab switch          |\n|     Authorised access only --> NETOPS \u003c--        |\n+--------------------------------------------------+\n^C\n!\ninterface GigabitEthernet1/0/1\n description Uplink to DEMO-CORE-01\n switchport mode trunk\n switchport trunk allowed vlan 10,20\n ip device tracking maximum 10\n no cdp enable\n!\ninterface GigabitEthernet1/0/2\n description Guest port\n switchport mode access\n switchport access vlan 10\n ip access-group ACL-GUEST-IN in\n device-tracking attach-policy IPDT-POLICY\n service-policy input QOS-IN\n authentication periodic\n spanning-tree portfast\n spanning-tree bpduguard enable\n!\ninterface Vlan10\n ip address 192.0.2.1 255.255.255.0\n ipv6 address 2001:db8:0:10::1/64\n!\ninterface GigabitEthernet0/0\n vrf forwarding MGMT\n ip address 203.0.113.30 255.255.255.0\n no ip redirects\n shutdown\n!\nrouter bgp 64500\n bgp log-neighbor-changes\n neighbor 198.51.100.2 remote-as 64501\n !\n address-family ipv4\n  network 192.0.2.0 mask 255.255.255.0\n  neighbor 198.51.100.2 activate\n exit-address-family\n!\nip access-list extended ACL-GUEST-IN\n 10 permit udp any host 192.0.2.53 eq domain\n 20 permit tcp any any eq 443\n 30 deny   ip any any log\n!\nip route vrf MGMT 0.0.0.0 0.0.0.0 203.0.113.254\n!\nsnmp-server community \u003ccommunity> RO SNMP-ACL\nsnmp-server host 192.0.2.50 version 2c DEMO-RO\nsnmp-server enable traps snmp linkdown linkup\n!\nline vty 0 4\n transport input ssh\n!\nend\n\nDEMO-ACCESS-01#show interfaces status\n\nPort         Name               Status       Vlan       Duplex  Speed Type\nGi1/0/1      Uplink to DEMO-CO  connected    trunk      a-full  a-1000 10/100/1000BaseTX\nGi1/0/2      Guest port         connected    10         a-full  a-1000 10/100/1000BaseTX\nGi1/0/3                         notconnect   10           auto   auto 10/100/1000BaseTX\nGi1/0/4      Printer            err-disabled 10           auto   auto 10/100/1000BaseTX\nGi1/0/5      Phone              connected    10         a-full  a-100  10/100/1000BaseTX\nDEMO-ACCESS-01#show ip interface brief | include Vlan|Gi0\nVlan10                 192.0.2.1       YES NVRAM  up                    up\nGigabitEthernet0/0     203.0.113.30    YES NVRAM  administratively down down\nDEMO-ACCESS-01#\n*Oct 20 09:14:01.123: %LINK-3-UPDOWN: Interface GigabitEthernet1/0/3, changed state to up\n*Oct 20 09:14:05.456: %PM-4-ERR_DISABLE: bpduguard error detected on Gi1/0/4, putting Gi1/0/4 in err-disable state\n*Oct 20 09:14:09.789: %SW_MATM-4-MACFLAP_NOTIF: Host 0000.5e00.5301 in vlan 10 is flapping between port Gi1/0/3 and port Gi1/0/5\nDEMO-ACCESS-01#\n";
+
+const ROLES = [
+  { key: 'green',  name: 'Good state & comments', ex: 'up, connected, permit, !' },
+  { key: 'red',    name: 'Warnings & bad state',  ex: 'no, shutdown, deny, down' },
+  { key: 'orange', name: 'Notices',               ex: 'disabled, err-disabled' },
+  { key: 'purple', name: 'Keywords',              ex: 'access, trunk, any, access-list' },
+  { key: 'teal',   name: 'Protocols & AAA',       ex: 'bgp, ssh, snmp-server, authentication' },
+  { key: 'yellow', name: 'Interfaces & lines',    ex: 'GigabitEthernet1/0/1, vty, Vlan10' },
+  { key: 'value',  name: 'Names & addresses',     ex: 'hostname, IPs, ACL names, secrets' },
+  { key: 'plain',  name: 'Normal text',           ex: 'everything else, banner art' },
+  { key: 'bg',     name: 'Background',            ex: 'terminal background' },
+];
+const ROLE_KEYS = ROLES.map(r => r.key).filter(k => k !== 'bg');
+const ROLE_LABEL = Object.fromEntries(ROLES.map(r => [r.key, r.name]));
+
+const PRESETS = [
+  { name: 'Vivid · black', note: 'the shipped default', c: { green:'#6EE068', red:'#FF4A5A', orange:'#FF9500', purple:'#E57BFF', teal:'#22DADA', yellow:'#FFD433', value:'#FFFFFF', plain:'#BBBBBB', bg:'#000000' } },
+  { name: 'Vivid · VS Code', note: 'shipped, VS Code background', c: { green:'#6EE068', red:'#FF4A5A', orange:'#FF9500', purple:'#E57BFF', teal:'#22DADA', yellow:'#FFD433', value:'#FFFFFF', plain:'#D8DEE9', bg:'#232425' } },
+  { name: 'Daybreak', note: 'the editor\'s exact pastels', c: { green:'#99C794', red:'#EB606B', orange:'#F99157', purple:'#C594C5', teal:'#5FB3B3', yellow:'#FAC863', value:'#FFFFFF', plain:'#D8DEE9', bg:'#232425' } },
+  { name: 'High contrast', note: 'maximum brightness on black', c: { green:'#00FF5A', red:'#FF3B3B', orange:'#FFA200', purple:'#FF7AFF', teal:'#00FFFF', yellow:'#FFFF00', value:'#FFFFFF', plain:'#E0E0E0', bg:'#000000' } },
+  { name: 'Colour-blind safe', note: 'Okabe–Ito hues', c: { green:'#009E73', red:'#D55E00', orange:'#E69F00', purple:'#CC79A7', teal:'#56B4E9', yellow:'#F0E442', value:'#FFFFFF', plain:'#BBBBBB', bg:'#000000' } },
+  { name: 'Solarized dark', note: 'Solarized palette', c: { green:'#859900', red:'#DC322F', orange:'#CB4B16', purple:'#6C71C4', teal:'#2AA198', yellow:'#B58900', value:'#EEE8D5', plain:'#93A1A1', bg:'#002B36' } },
+  { name: 'Light', note: 'white terminal', c: { green:'#2E7D32', red:'#C62828', orange:'#B85C00', purple:'#8E3AB8', teal:'#00796B', yellow:'#8A6D00', value:'#000000', plain:'#3A3A3A', bg:'#FFFFFF' } },
+  { name: 'Monokai', note: 'Monokai palette', c: { green:'#A6E22E', red:'#F92672', orange:'#FD971F', purple:'#AE81FF', teal:'#66D9EF', yellow:'#E6DB74', value:'#F8F8F2', plain:'#CFCFC2', bg:'#272822' } },
+];
+const RDM_DEFAULT_BG = '#000000';
+const HEX = /^#[0-9A-F]{6}$/;
+
+// State. Every rule: { name, role, re, own, colour (own colour or null = group colour), off, ... }
+let colours = { ...PRESETS[0].c };
+// Bold / underline per group; a rule's own b/u (null = follow its group) wins
+const plainLooks = () => Object.fromEntries(ROLE_KEYS.map(k => [k, { b: false, u: false }]));
+let looks = plainLooks();
+const lookOf = r => ({ b: r.b ?? looks[r.role]?.b ?? false, u: r.u ?? looks[r.role]?.u ?? false });
+const hasOwnLook = r => !r.own && !r.off && (r.colour || r.b != null || r.u != null);
+const fresh =() => RULES.map(([name, role, re], idx) => ({ name, role, re, idx, own: false, colour: null, off: false }));
+let rules = fresh();
+let report = null;
+let tab = 'xml';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const colourOf = r => r.colour || colours[r.role];
+
+// ---------- painting: first rule that claims a character wins (as in RDM) ----------
+const reEscape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function compile(r) {
+  // .NET inline flags are not JavaScript; our own rules carry (?-i) only in the exported file
+  let src = r.own ? (r.regex ? r.kw.replace(/^\(\?-?i\)/, '') : reEscape(r.kw)) : r.re;
+  if (r.own && r.word) src = `(?<![\\w-])(?:${src})(?![\\w-])`;
+  try { return new RegExp(src, r.own && !r.cs ? 'gi' : 'g'); } catch { return null; }
+}
+function paint() {
+  const active = rules.map((r, i) => [i, r]).filter(([, r]) => !r.off);
+  const compiled = active.map(([i, r]) => { const re = compile(r); r.noPreview = !re; return [i, re]; });
+  const html = DEMO.replace(/\n$/, '').split('\n').map(line => {
+    const owner = new Array(line.length).fill(null);
+    for (const [i, re] of compiled) {
+      if (!re) continue;
+      for (const m of line.matchAll(re)) {
+        if (!m[0].length) continue;
+        for (let k = m.index; k < m.index + m[0].length; k++) if (owner[k] === null) owner[k] = i;
+      }
+    }
+    let out = '';
+    for (let k = 0; k < line.length;) {
+      let j = k; while (j < line.length && owner[j] === owner[k]) j++;
+      const t = esc(line.slice(k, j));
+      out += owner[k] === null ? t : `<span data-i="${owner[k]}">${t}</span>`; k = j;
+    }
+    return out;
+  }).join('\n');
+  $('screen').innerHTML = html;
+}
+
+// ---------- contrast ----------
+const lum = hex => { const v = [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)/255).map(c => c <= .03928 ? c/12.92 : ((c+.055)/1.055)**2.4); return .2126*v[0]+.7152*v[1]+.0722*v[2]; };
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+
+// ---------- colour rows ----------
+function rowHtml(id, label, sub, extraNote = '') {
+  return `<div class="role" data-k="${id}">
+    <button class="sw" id="c-${id}" aria-label="Change colour: ${esc(label)}" aria-haspopup="dialog" aria-expanded="false"></button>
+    <span class="lbl"><b>${esc(label)}</b><em>${sub}</em></span>
+    <button class="pen${id === 'bg' ? ' none' : ''}" data-pen="${id}" title="Edit the rules behind this colour" aria-label="Edit rules: ${esc(label)}"${id === 'bg' ? ' tabindex="-1"' : ''}><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.5 2.5l2 2L5 13H3v-2z"/><path d="M10 4l2 2"/></svg></button>
+    <span class="bu${id === 'bg' ? ' none' : ''}"><button class="tg" data-t="b" id="b-${id}" title="Bold" aria-label="Bold: ${esc(label)}" aria-pressed="false">B</button><button class="tg" data-t="u" id="u-${id}" title="Underlined" aria-label="Underlined: ${esc(label)}" aria-pressed="false">U</button></span>
+    <input type="text" id="h-${id}" maxlength="7" aria-label="${esc(label)} hex">
+    <div class="lc" id="lc-${id}" hidden></div>${extraNote}</div>`;
+}
+const rowLabel = id => document.querySelector(`.role[data-k="${id}"] .lbl b`).textContent;
+const lookGetters = {};
+function bindRow(id, get, set, getLook, setLook) {
+  $('c-' + id).onclick = () => openPicker(id, rowLabel(id), get, set);
+  if (getLook) {
+    lookGetters[id] = getLook;
+    for (const t of ['b', 'u']) $(t + '-' + id).onclick = () => { setLook(t, !getLook()[t]); refresh(); };
+  }
+  $('h-' + id).onchange = e => { const v = e.target.value.trim(); const hex = (v[0] === '#' ? v : '#' + v).toUpperCase();
+    if (HEX.test(hex)) { set(hex); apply(); } else { e.target.value = get(); toast('Use a six-digit hex colour, like #FFD433'); } };
+  const row = document.querySelector(`.role[data-k="${id}"]`);
+  row.onmouseenter = () => focusRows(id); row.onmouseleave = () => focusRows(null);
+  row.addEventListener('click', () => setTimeout(() => revealRow(id)));  // after the picker has opened and taken focus
+  row.querySelector('.pen').onclick = e => { e.stopPropagation(); goRules(id); };
+}
+// If none of the words this row colours is in view, scroll the terminal to the nearest one, a few lines below the top
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function revealRow(id) {
+  if (id === 'bg' || id === 'plain') return;
+  const scr = $('screen'), hit = rowTargets(id);
+  const spans = [...scr.querySelectorAll('span[data-i]')].filter(s => hit(+s.dataset.i));
+  if (!spans.length) return;
+  const top = scr.scrollTop, bottom = top + scr.clientHeight;
+  if (spans.some(s => s.offsetTop >= top && s.offsetTop + s.offsetHeight <= bottom)) return;
+  const line = parseFloat(getComputedStyle(scr).lineHeight) || 19;
+  const near = spans.reduce((a, s) => Math.abs(s.offsetTop - top) < Math.abs(a.offsetTop - top) ? s : a);
+  scr.scrollTo({ top: Math.max(0, near.offsetTop - 4 * line), behavior: reducedMotion ? 'auto' : 'smooth' });
+}
+function renderRoles() {
+  $('roles').innerHTML = ROLES.map(r => (r.key === 'plain' ? '<div class="sep"></div>' : '') + rowHtml(r.key, r.name, esc(r.ex))).join('');
+  for (const r of ROLES) bindRow(r.key, () => colours[r.key], v => colours[r.key] = v,
+    r.key === 'bg' ? null : () => looks[r.key], (t, v) => looks[r.key][t] = v);
+}
+function renderExtra() {
+  const own = rules.map((r, i) => [i, r]).filter(([, r]) => r.own);
+  const over = rules.map((r, i) => [i, r]).filter(([, r]) => hasOwnLook(r));
+  let h = '';
+  if (own.length) h += '<div class="sep"></div><h3>Your own rules</h3>' + own.map(([i, r]) =>
+    rowHtml('r' + i, r.name, `<code>${esc(r.kw)}</code>`)).join('');
+  if (over.length) h += '<div class="sep"></div><h3>Rules with their own look</h3>' + over.map(([i, r]) =>
+    rowHtml('r' + i, r.name, `instead of ${esc(ROLE_LABEL[r.role])}`)).join('');
+  $('extra').innerHTML = h;
+  for (const [i, r] of [...own, ...over]) bindRow('r' + i, () => colourOf(r), v => r.colour = v, () => lookOf(r), (t, v) => r[t] = v);
+}
+function rowTargets(id) {
+  if (id === 'bg') return () => false;
+  if (id === 'rx') return i => i === rxSel;
+  if (id[0] === 'r' && /^r\d+$/.test(id)) { const n = +id.slice(1); return i => i === n; }
+  return i => !rules[i].colour && rules[i].role === id;
+}
+function focusRows(id) {
+  const scr = $('screen'), hit = id ? rowTargets(id) : null;
+  scr.classList.toggle('focus', !!id && id !== 'bg');
+  scr.querySelectorAll('span[data-i]').forEach(s => s.classList.toggle('on', !!hit && hit(+s.dataset.i)));
+}
+
+const styleEl = document.createElement('style'); document.head.appendChild(styleEl);
+function apply(skipId) {
+  styleEl.textContent = `pre.screen{background:${colours.bg};color:${colours.plain}}` +
+    rules.map((r, i) => { if (r.off) return ''; const l = lookOf(r);
+      return `pre.screen span[data-i="${i}"]{color:${colourOf(r)};font-weight:${l.b ? 700 : 400};text-decoration:${l.u ? 'underline' : 'none'};text-underline-offset:3px}`; }).join('');
+  const rows = [...ROLES.map(r => [r.key, colours[r.key]]),
+    ...rules.map((r, i) => [r, i]).filter(([r]) => r.own || hasOwnLook(r)).map(([r, i]) => ['r' + i, colourOf(r)])];
+  for (const [id, val] of rows) {
+    if (!$('c-' + id)) continue;
+    if (lookGetters[id]) { const l = lookGetters[id](); $('b-' + id).setAttribute('aria-pressed', l.b); $('u-' + id).setAttribute('aria-pressed', l.u); }
+    $('c-' + id).style.background = val;
+    if (id !== skipId) $('h-' + id).value = val;
+    const lc = $('lc-' + id);
+    const r = id[0] === 'r' && /^r\d+$/.test(id) ? rules[+id.slice(1)] : null;
+    if (id === 'bg') { lc.hidden = true; continue; }
+    const cr = contrast(val, colours.bg);
+    const notes = [];
+    if (cr < 3) notes.push(`Hard to read on this background (contrast ${cr.toFixed(1)}:1)`);
+    if (r && r.noPreview) notes.push('Uses a pattern this page can’t preview. It is kept in your file as is.');
+    if (r && !r.own) notes.push(`<button class="linkbtn" data-reset="${+id.slice(1)}">Use the group’s look</button>`);
+    lc.hidden = !notes.length; lc.innerHTML = notes.join(' · ');
+  }
+  document.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => { Object.assign(rules[+b.dataset.reset], { colour: null, b: null, u: null }); refresh(); });
+  document.querySelectorAll('.preset').forEach(b => {
+    const p = PRESETS[+b.dataset.i].c; b.setAttribute('aria-pressed', ROLES.every(r => p[r.key] === colours[r.key]));
+  });
+  renderExport();
+  if (view === 'rules') { renderRxList(); rxSwatch(); }
+}
+function refresh() { paint(); renderExtra(); renderReport(); apply(); if (view === 'rules') renderRx(); }
+
+function renderPresets() {
+  $('presets').innerHTML = PRESETS.map((p, i) => `<button class="preset" data-i="${i}" title="${p.note}" aria-pressed="false">
+    <span class="dots" style="background:${p.c.bg}">${['green','red','purple','teal','yellow'].map(k => `<i style="background:${p.c[k]}"></i>`).join('')}</span>
+    <span>${p.name}</span></button>`).join('');
+  $('presets').querySelectorAll('.preset').forEach(b => b.onclick = () => { colours = { ...PRESETS[+b.dataset.i].c }; apply(); });
+}
+
+// ---------- opening a file ----------
+function parseFile(text) {
+  if (text.length > 2_000_000) throw new Error('This file is larger than 2 MB. An RDM rule list is usually under 50 KB.');
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('This file isn’t valid XML. Export the rule list from RDM again and open that file.');
+  const items = [...doc.getElementsByTagName('SyntaxHighlightingItem')];
+  if (!items.length) throw new Error('No highlighting rules in this file. In RDM, export the rules of your profile (the rule list, not the colours).');
+  const get = (el, tag) => (el.getElementsByTagName(tag)[0]?.textContent ?? '').trim();
+  return items.map(el => {
+    const raw = get(el, 'Keyword');
+    return { name: get(el, 'Name'), id: get(el, 'ID'), kw: raw, re: raw.replace(/^\(\?-i\)/, ''),
+      regex: get(el, 'IsRegex') !== 'false', cs: get(el, 'IsCaseSensitive') === 'true', word: get(el, 'IsCompleteWord') === 'true',
+      b: get(el, 'IsBold') === 'true', u: get(el, 'IsUnderlined') === 'true',
+      fg: get(el, 'TextColorString').toUpperCase(), bg: get(el, 'BackColorString').toUpperCase() };
+  });
+}
+function merge(up, fileName) {
+  const byName = new Map(), byRe = new Map();
+  RULES.forEach(([name, role, re], idx) => { const k = { name, role, re, idx }; byName.set(name, k); byRe.set(re, k); });
+  const out = [], seen = new Set();
+  for (const u of up) {
+    let k = byName.get(u.name) || (u.regex ? byRe.get(u.re) : null);
+    if (k && seen.has(k.name)) k = null;
+    if (k) {
+      seen.add(k.name);
+      const changed = !u.regex || u.re !== k.re;
+      out.push({ name: k.name, role: k.role, idx: k.idx, own: false, off: false, colour: HEX.test(u.fg) ? u.fg : null, b: u.b, u: u.u,
+        ours: k.re, yours: u.re, changed, choice: changed ? 'yours' : null, re: changed ? u.re : k.re, renamedFrom: u.name !== k.name ? u.name : null, id: u.id });
+    } else {
+      out.push({ name: u.name || '(unnamed rule)', role: null, own: true, off: false, colour: HEX.test(u.fg) ? u.fg : '#FFFFFF',
+        kw: u.kw, regex: u.regex, cs: u.cs, word: u.word, id: u.id, b: u.b, u: u.u });
+    }
+  }
+  // our rules the file doesn't have: placed after the nearest earlier rule of ours, left out until chosen
+  RULES.forEach(([name, role, re], idx) => {
+    if (seen.has(name)) return;
+    let pos = 0; out.forEach((o, j) => { if (!o.own && o.idx < idx) pos = j + 1; });
+    out.splice(pos, 0, { name, role, re, idx, own: false, off: true, missing: true, choice: 'leave', colour: null });
+  });
+  // group colour = the colour most of the group's rules have; the rest keep their own colour
+  const c = { ...colours };
+  const bg = up.map(u => u.bg).find(b => HEX.test(b)); if (bg) c.bg = bg;
+  for (const key of ROLE_KEYS) {
+    const tally = {}; out.filter(r => !r.own && !r.missing && r.role === key && r.colour).forEach(r => tally[r.colour] = (tally[r.colour] || 0) + 1);
+    const top = Object.entries(tally).sort((a, b) => b[1] - a[1])[0]; if (top) c[key] = top[0];
+  }
+  out.forEach(r => { if (!r.own && r.colour === c[r.role]) r.colour = null; });
+  // same for bold / underline: the group takes what most of its rules have
+  const lk = plainLooks();
+  for (const key of ROLE_KEYS) {
+    const grp = out.filter(r => !r.own && !r.missing && r.role === key);
+    for (const t of ['b', 'u']) lk[key][t] = grp.filter(r => r[t]).length * 2 > grp.length;
+  }
+  out.forEach(r => { if (r.own) return; for (const t of ['b', 'u']) r[t] = r.missing || r[t] === lk[r.role][t] ? null : r[t]; });
+  colours = c; rules = out; looks = lk; report = { fileName, total: up.length };
+}
+function openText(text, fileName) {
+  try { merge(parseFile(text), fileName); refresh(); toast(`Opened ${fileName}`); }
+  catch (e) { toast(e.message); }
+}
+function openFile(f) {
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => openText(String(rd.result), f.name);
+  rd.onerror = () => toast('This file couldn’t be read.');
+  rd.readAsText(f);
+}
+$('file').onchange = e => { openFile(e.target.files[0]); e.target.value = ''; };
+let dragDepth = 0;
+addEventListener('dragenter', e => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { dragDepth++; document.body.classList.add('dropping'); } });
+addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dropping'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); dragDepth = 0; document.body.classList.remove('dropping'); openFile(e.dataTransfer.files[0]); });
+$('reset').onclick = () => { rules = fresh(); report = null; colours = { ...PRESETS[0].c }; looks = plainLooks(); refresh(); };
+
+function renderReport() {
+  $('report').hidden = !report;
+  if (!report) return;
+  $('rep-file').textContent = report.fileName;
+  const known = rules.filter(r => !r.own && !r.missing), own = rules.filter(r => r.own);
+  const changed = rules.filter(r => r.changed), missing = rules.filter(r => r.missing), over = rules.filter(hasOwnLook);
+  const chips = [
+    `<span class="chip">${report.total} rules in the file</span>`,
+    `<span class="chip ok">${known.length - changed.length} match the current set</span>`,
+    own.length && `<span class="chip ok">${own.length} of your own, kept</span>`,
+    over.length && `<span class="chip ok">${over.length} with their own look, kept</span>`,
+    changed.length && `<span class="chip att">${changed.length} changed</span>`,
+    missing.length && `<span class="chip att">${missing.length} missing</span>`,
+  ].filter(Boolean);
+  $('chips').innerHTML = chips.join('');
+  const seg = (i, opts, cur) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-dec="${i}" data-v="${v}" aria-pressed="${v === cur}">${l}</button>`).join('')}</div>`;
+  const diff = (a, b) => { let p = 0; while (p < a.length && a[p] === b[p]) p++; let s = 0; while (s < a.length - p && s < b.length - p && a[a.length-1-s] === b[b.length-1-s]) s++;
+    return esc(b.slice(0, p)) + '<ins>' + esc(b.slice(p, b.length - s)) + '</ins>' + esc(b.slice(b.length - s)); };
+  $('decisions').innerHTML = rules.map((r, i) => {
+    if (r.changed) return `<div class="dec"><div><b>${esc(r.name)}</b>${r.renamedFrom ? ` <span class="small">(yours: “${esc(r.renamedFrom)}”)</span>` : ''}
+      <p>Your pattern differs from the current one. Either you edited it, or your file is from an older version.</p></div>
+      ${seg(i, [['yours', 'Keep yours'], ['ours', 'Use current']], r.choice)}
+      <div class="diff">yours: ${diff(r.ours, r.yours)}\ncurrent: ${esc(r.ours)}</div></div>`;
+    if (r.missing) return `<div class="dec"><div><b>${esc(r.name)}</b> <span class="small">· ${esc(ROLE_LABEL[r.role])}</span>
+      <p>Not in your file. Either you removed it, or it was added after your file was made.</p></div>
+      ${seg(i, [['leave', 'Leave out'], ['add', 'Add it']], r.choice)}</div>`;
+    return '';
+  }).join('');
+  document.querySelectorAll('[data-dec]').forEach(b => b.onclick = () => {
+    const r = rules[+b.dataset.dec]; r.choice = b.dataset.v;
+    if (r.changed) r.re = r.choice === 'yours' ? r.yours : r.ours;
+    if (r.missing) r.off = r.choice === 'leave';
+    refresh();
+  });
+}
+
+// An example of what a user might bring: Vivid on black, then edited in RDM
+function exampleXml() {
+  const items = RULES.map(([name, role, re]) => ({ name, re, fg: role === 'purple' ? '#C792EA' : PRESETS[0].c[role], regex: true, cs: true }))
+    .filter(r => r.name !== 'STP keywords');
+  const proto = items.find(r => r.name === 'Protocols'); proto.re = proto.re.replace('|voice)', '|voice|cdp)');
+  items.find(r => r.name === 'Interface name').fg = '#7CC4FF';
+  items.find(r => r.name === 'Warning / bad state').b = true;
+  items.splice(2, 0, { name: 'My device names', re: '\\bDEMO-[A-Z]+-\\d+\\b', fg: '#FF8FD8', regex: true, cs: true, b: true });
+  items.splice(10, 0, { name: 'Private AS numbers', re: '\\b645\\d\\d\\b', fg: '#9FE8C8', regex: true, cs: true });
+  items.push({ name: 'NVRAM', re: 'nvram', fg: '#B0B0B0', regex: false, cs: false });
+  return ['<?xml version="1.0" encoding="utf-8"?>', '<SyntaxHighlightingItemList>', '  <Items>',
+    ...items.map(r => `    <SyntaxHighlightingItem><BackColorString>#000000</BackColorString><BackgroundColor>Custom</BackgroundColor><ForegroundColor>Custom</ForegroundColor><IsBold>${!!r.b}</IsBold><IsCompleteWord>false</IsCompleteWord><IsCaseSensitive>${r.cs}</IsCaseSensitive><IsRegex>${r.regex}</IsRegex><Keyword>${esc((r.regex ? '(?-i)' : '') + r.re)}</Keyword><Name>${esc(r.name)}</Name><TextColorString>${r.fg}</TextColorString></SyntaxHighlightingItem>`),
+    '  </Items>', '</SyntaxHighlightingItemList>'].join('\n');
+}
+$('example').onclick = () => openText(exampleXml(), 'my-cisco-rules.xml');
+
+// ---------- export (same format as src/build.js) ----------
+const ids = {};
+async function prepIds() {
+  for (const [name] of RULES) {
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(['custom', name].join('\0')));
+      const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+      ids[name] = `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20,32)}`;
+    } catch { ids[name] = ''; }
+  }
+}
+function rulesXml() {
+  const items = rules.filter(r => !r.off).map(r => [
+    '    <SyntaxHighlightingItem>',
+    `      <BackColorString>${colours.bg}</BackColorString>`,
+    '      <BackgroundColor>Custom</BackgroundColor>',
+    '      <ForegroundColor>Custom</ForegroundColor>',
+    `      <ID>${esc(r.id || ids[r.name] || '')}</ID>`,
+    // TODO before the real site: confirm both tag names against an RDM export with Bold/Underlined ticked
+    `      <IsBold>${lookOf(r).b}</IsBold>`,
+    `      <IsUnderlined>${lookOf(r).u}</IsUnderlined>`,
+    `      <IsCompleteWord>${r.own ? r.word : false}</IsCompleteWord>`,
+    `      <IsCaseSensitive>${r.own ? r.cs : true}</IsCaseSensitive>`,
+    `      <IsRegex>${r.own ? r.regex : true}</IsRegex>`,
+    `      <Keyword>${esc(r.own ? r.kw : '(?-i)' + r.re)}</Keyword>`,
+    `      <Name>${esc(r.name)}</Name>`,
+    `      <TextColorString>${colourOf(r)}</TextColorString>`,
+    '    </SyntaxHighlightingItem>'].join('\n'));
+  return ['<?xml version="1.0" encoding="utf-8"?>', '<SyntaxHighlightingItemList>', '  <Items>', ...items, '  </Items>', '</SyntaxHighlightingItemList>', ''].join('\n');
+}
+const ANSI = ['#232425','#65737E','#EB606B','#EB606B','#99C794','#99C794','#ECC575','#ECC575','#6699CC','#6699CC','#C594C5','#C594C5','#5FB3B3','#5FB3B3','#D8DEE9','#FFFFFF'];
+function schemeTxt() {
+  const rgb = hex => [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)).join(',');
+  const slots = [colours.plain, colours.value, colours.bg, colours.bg, colours.bg, colours.plain, colours.bg, ...ANSI.slice(1)];
+  return slots.map((h, i) => `Colour${i}\\${rgb(h)}\\`).reverse().join('\n') + '\n';
+}
+function renderExport() {
+  const needsTxt = colours.bg !== RDM_DEFAULT_BG || colours.plain !== '#BBBBBB';
+  $('tab-xml').setAttribute('aria-selected', tab === 'xml'); $('tab-txt').setAttribute('aria-selected', tab === 'txt');
+  $('out').value = tab === 'xml' ? rulesXml() : schemeTxt();
+  $('step-colours').hidden = !needsTxt;
+  const note = $('ex-note');
+  const n = rules.filter(r => !r.off).length, own = rules.filter(r => r.own).length;
+  if (tab === 'xml') { note.className = 'ex-note'; note.textContent = `${n} rules${own ? `, ${own} of them your own` : ''}, in RDM order. Import into an RDM syntax-highlighting profile.`; }
+  else if (needsTxt) { note.className = 'ex-note warn'; note.textContent = 'Your background or text colour differs from RDM’s default, so import this file too. Otherwise words sit on coloured boxes.'; }
+  else { note.className = 'ex-note'; note.textContent = 'Not needed: you kept RDM’s default black terminal. The .xml alone is enough.'; }
+}
+$('tab-xml').onclick = () => { tab = 'xml'; renderExport(); };
+$('tab-txt').onclick = () => { tab = 'txt'; renderExport(); };
+$('copy').onclick = () => {
+  const ta = $('out');
+  navigator.clipboard.writeText(ta.value).then(() => toast('Copied to clipboard'), () => { ta.focus(); ta.select(); toast('Selected. Press Ctrl+C to copy'); });
+};
+$('dl').onclick = () => {
+  const name = tab === 'xml' ? 'RDM-Cisco-Custom.xml' : 'RDM-Cisco-Custom-Colors.txt';
+  const url = URL.createObjectURL(new Blob([$('out').value], { type: tab === 'xml' ? 'application/xml' : 'text/plain' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast(`Saved ${name}`);
+};
+
+let tt; function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 3200); }
+
+// ---------- preview interaction ----------
+const tip = $('tip');
+$('screen').addEventListener('mousemove', e => {
+  const s = e.target.closest('span[data-i]');
+  if (!s) { tip.hidden = true; return; }
+  const r = rules[+s.dataset.i];
+  tip.textContent = r.own ? `Your rule “${r.name}”` : `${ROLE_LABEL[r.role]} · rule “${r.name}”${hasOwnLook(r) ? ' (own look)' : ''}`;
+  tip.hidden = false; tip.style.left = Math.max(8, Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8)) + 'px'; tip.style.top = (e.clientY + 16) + 'px';
+});
+$('screen').addEventListener('mouseleave', () => tip.hidden = true);
+$('screen').addEventListener('click', e => {
+  const s = e.target.closest('span[data-i]');
+  const i = s ? +s.dataset.i : null, r = s ? rules[i] : null;
+  const id = !s ? 'plain' : (r.own || hasOwnLook(r)) ? 'r' + i : r.role;
+  const row = document.querySelector(`.role[data-k="${id}"]`); if (!row) return;
+  document.querySelectorAll('.role.active').forEach(x => x.classList.remove('active'));
+  row.classList.add('active'); row.scrollIntoView({ block: 'nearest' });
+  $('c-' + id).click();
+});
+
+// ---------- colour picker (instead of the operating system's dialog) ----------
+const SUGGEST = ['#FF4A5A','#FF9500','#FFD433','#6EE068','#22DADA','#5FB3FF','#7C8CFF','#E57BFF','#FF8FD8','#FFFFFF','#BBBBBB','#000000',
+                 '#EB606B','#F99157','#FAC863','#99C794','#5FB3B3','#6699CC','#C594C5','#AB7967','#D8DEE9','#65737E','#232425','#002B36'];
+const pk = { id: null, get: null, set: null, old: null, h: 0, s: 0, v: 0 };
+function hexToHsv(hex) {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const mx = Math.max(r, g, b), d = mx - Math.min(r, g, b);
+  let h = 0;
+  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, mx ? d / mx : 0, mx];
+}
+function hsvToHex(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+function pkShow(fromHsv = true) {
+  const hex = fromHsv ? hsvToHex(pk.h, pk.s, pk.v) : pk.get();
+  $('pk-sv').style.backgroundColor = hsvToHex(pk.h, 1, 1);
+  $('pk-dot').style.left = pk.s * 100 + '%'; $('pk-dot').style.top = (1 - pk.v) * 100 + '%';
+  $('pk-dot').style.background = hex;
+  $('pk-thumb').style.left = pk.h / 360 * 100 + '%';
+  $('pk-hue').setAttribute('aria-valuenow', Math.round(pk.h));
+  $('pk-sv').setAttribute('aria-valuetext', `saturation ${Math.round(pk.s * 100)}%, brightness ${Math.round(pk.v * 100)}%`);
+  $('pk-new').style.background = hex; $('pk-old').style.background = pk.old;
+  if (document.activeElement !== $('pk-hex')) $('pk-hex').value = hex;
+  const isBg = pk.id === 'bg';
+  const cr = contrast(hex, isBg ? colours.plain : colours.bg);
+  $('pk-cr').className = 'pk-cr' + (cr < 3 ? ' bad' : '');
+  $('pk-cr').textContent = `${cr.toFixed(1)}:1 ${isBg ? 'with text' : 'on background'}${cr < 3 ? ' · hard to read' : ''}`;
+  $('pk-prev').style.cssText = isBg ? `background:${hex};color:${colours.plain}` : `background:${colours.bg};color:${hex}`;
+  document.querySelectorAll('.pk-sws button').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === hex));
+  return hex;
+}
+function pkCommit(hex) { pk.set(hex); apply(); }
+function pkFromHsv() { pkCommit(pkShow(true)); }
+function pkFromHex(hex) { [pk.h, pk.s, pk.v] = hexToHsv(hex); pkCommit(hex); pkShow(true); }
+function swatches(list) { return list.map(c => `<button data-c="${c}" style="background:${c}" title="${c}" aria-label="${c}"></button>`).join(''); }
+function openPicker(id, label, get, set) {
+  if (pk.id) closePicker(true);
+  Object.assign(pk, { id, get, set, old: get() });
+  [pk.h, pk.s, pk.v] = hexToHsv(pk.old);
+  $('pk-title').textContent = label;
+  const sample = { bg: 'Background behind the text', plain: 'interface description text' }[id]
+    || [...new Set([...$('screen').querySelectorAll('span[data-i]')].filter(s => rowTargets(id)(+s.dataset.i)).map(s => s.textContent.trim()))].slice(0, 4).join('  ')
+    || 'no match in the preview';
+  $('pk-prev').textContent = sample;
+  const inUse = [...new Set([...ROLES.map(r => colours[r.key]), ...rules.filter(r => r.colour).map(r => r.colour)])].slice(0, 12);
+  $('pk-pal').innerHTML = swatches(inUse); $('pk-sug').innerHTML = swatches(SUGGEST);
+  const el = $('picker'); el.hidden = false;
+  $('c-' + id).setAttribute('aria-expanded', 'true');
+  pkPlace();
+  pkShow(false);
+  $('pk-sv').focus({ preventScroll: true });
+}
+// beside the swatch on wide screens, as a bottom sheet on phones; follows the swatch when the page scrolls
+function pkPlace() {
+  if (!pk.id) return;
+  const el = $('picker'), btn = $('c-' + pk.id); if (!btn) return;
+  el.classList.toggle('sheet', innerWidth < 600);
+  if (innerWidth < 600) { el.style.left = el.style.top = ''; return; }
+  const r = btn.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  const left = r.right + 10 + w < innerWidth ? r.right + 10 : Math.max(8, r.left - w - 10);
+  el.style.left = left + 'px'; el.style.top = Math.max(8, Math.min(r.top - 40, innerHeight - h - 8)) + 'px';
+}
+addEventListener('scroll', pkPlace, { capture: true, passive: true });
+addEventListener('resize', pkPlace);
+function closePicker(keep) {
+  $('picker').hidden = true;
+  if (!pk.id) return;
+  if (!keep) pkCommit(pk.old);
+  const btn = $('c-' + pk.id); if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus({ preventScroll: true }); }
+  const wasRule = pk.id === 'rx';
+  pk.id = null;
+  if (wasRule) refresh(); // a rule that just took its own colour gets its row in Colours
+}
+// No pointer capture on purpose: a mouse released outside the page's frame (the picker often sits at its edge)
+// could leave the capture stuck and swallow every later click. The drag follows the pointer anywhere on the
+// page and ends on release, cancel, focus loss, or the first move that arrives with no button held.
+function drag(el, onMove) {
+  let end = null;
+  el.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault(); el.focus();
+    if (end) end();
+    const move = ev => { if (ev.buttons === 0) return end(); const r = el.getBoundingClientRect();
+      onMove(Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height))); };
+    end = () => { for (const [t, h] of [['pointermove', move], ['pointerup', end], ['pointercancel', end], ['blur', end]]) removeEventListener(t, h, true); end = null; };
+    for (const [t, h] of [['pointermove', move], ['pointerup', end], ['pointercancel', end], ['blur', end]]) addEventListener(t, h, true);
+    move(e);
+  });
+}
+drag($('pk-sv'), (x, y) => { pk.s = x; pk.v = 1 - y; pkFromHsv(); });
+drag($('pk-hue'), x => { pk.h = Math.min(359.9, x * 360); pkFromHsv(); });
+$('pk-sv').addEventListener('keydown', e => {
+  const st = e.shiftKey ? .1 : .01, m = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, st], ArrowDown: [0, -st] }[e.key];
+  if (!m) return; e.preventDefault();
+  pk.s = Math.min(1, Math.max(0, pk.s + m[0])); pk.v = Math.min(1, Math.max(0, pk.v + m[1])); pkFromHsv();
+});
+$('pk-hue').addEventListener('keydown', e => {
+  const st = e.shiftKey ? 10 : 1, d = { ArrowLeft: -st, ArrowDown: -st, ArrowRight: st, ArrowUp: st }[e.key];
+  if (d === undefined) return; e.preventDefault(); pk.h = (pk.h + d + 360) % 360; pkFromHsv();
+});
+$('pk-hex').addEventListener('input', e => { const v = e.target.value.trim(), hex = (v[0] === '#' ? v : '#' + v).toUpperCase(); if (HEX.test(hex)) pkFromHex(hex); });
+$('pk-hex').addEventListener('keydown', e => { if (e.key === 'Enter') closePicker(true); });
+$('pk-hex').addEventListener('blur', () => pkShow(true));
+$('picker').addEventListener('click', e => { const c = e.target.closest('.pk-sws button'); if (c) pkFromHex(c.dataset.c); });
+$('pk-old').onclick = () => pkFromHex(pk.old);
+$('pk-ok').onclick = () => { closePicker(true); rxReturn(); };
+$('pk-cancel').onclick = () => { closePicker(false); rxReturn(); };
+$('pk-close').onclick = () => { closePicker(true); rxReturn(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && pk.id) { closePicker(false); rxReturn(); } });
+document.addEventListener('pointerdown', e => {
+  if (pk.id && !$('picker').contains(e.target) && !e.target.closest('.sw') && !e.target.closest('#screen')) { closePicker(true); returnTo = null; }
+});
+
+
+// ---------- Rules view (draft) ----------
+let view = 'colours', rxSel = 0, rxFilter = null, rxInfo = null, returnTo = null;
+// a detour from Rules to the colour picker comes back on Done / Cancel; clicking elsewhere in Colours stays there
+function rxReturn() { if (returnTo) { returnTo = null; showView('rules'); } }
+function showView(v) {
+  view = v;
+  $('view-colours').hidden = v !== 'colours'; $('view-rules').hidden = v !== 'rules';
+  $('tab-colours').setAttribute('aria-selected', v === 'colours'); $('tab-rules').setAttribute('aria-selected', v === 'rules');
+  closePicker(true); returnTo = null;
+  if (v === 'rules') renderRx(true);
+}
+$('tab-colours').onclick = () => showView('colours');
+$('tab-rules').onclick = () => showView('rules');
+// from a colour row to the rules behind it
+function goRules(id) {
+  if (/^r\d+$/.test(id)) { rxFilter = null; rxSel = +id.slice(1); }
+  else { rxFilter = id; const hit = rowTargets(id); rxSel = rules.findIndex((r, i) => hit(i)); if (rxSel < 0) { rxSel = 0; rxFilter = null; } }
+  showView('rules');
+}
+const rxRule = () => rules[rxSel];
+const rxSrc = r => r.own ? r.kw : r.re;
+function rxBadges(r) {
+  const b = [];
+  if (r.own) b.push('<span class="bd yours">yours</span>');
+  if (r.changed && !r.own) b.push('<span class="bd">edited</span>');
+  if (r.noPreview) b.push(r.invalid ? '<span class="bd invalid">invalid</span>' : '<span class="bd">not in preview</span>');
+  if (r.off) b.push('<span class="bd">left out</span>');
+  return b.join(' ');
+}
+function renderRxList() {
+  const hit = rxFilter ? rowTargets(rxFilter) : () => true;
+  const f = $('rx-filter'); f.hidden = !rxFilter;
+  if (rxFilter) f.innerHTML = `Rules behind <b>${esc(rxFilter[0] === 'r' ? rules[+rxFilter.slice(1)].name : ROLE_LABEL[rxFilter])}</b> · <button class="linkbtn" id="rx-all">show all ${rules.length}</button>`;
+  $('rx-items').innerHTML = rules.map((r, i) => !hit(i) && i !== rxSel ? '' :
+    `<div class="rx-item${r.off ? ' off' : ''}" role="button" tabindex="0" data-i="${i}" aria-pressed="${i === rxSel}" draggable="true">
+      <span class="grip" title="Drag to reorder" aria-hidden="true">⋮⋮</span><i class="dot" style="background:${r.off ? 'transparent' : colourOf(r)}"></i>
+      <span class="nm"><small>${i + 1}</small>${esc(r.name)}</span><span>${rxBadges(r)}</span></div>`).join('');
+  const all = $('rx-all'); if (all) all.onclick = () => { rxFilter = null; renderRx(); };
+  $('rx-items').querySelectorAll('.rx-item').forEach(el => {
+    const pick = () => { rxSel = +el.dataset.i; renderRx(true); };
+    el.onclick = pick; el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } };
+    // drag to reorder: drop above or below another rule, by the pointer's half of that row
+    el.ondragstart = e => { rxDrag = +el.dataset.i; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', el.dataset.i); };
+    el.ondragend = () => { rxDrag = null; $('rx-items').querySelectorAll('.dragging, .drop-before, .drop-after').forEach(x => x.classList.remove('dragging', 'drop-before', 'drop-after')); };
+    el.ondragover = e => { if (rxDrag === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      const r = el.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      $('rx-items').querySelectorAll('.drop-before, .drop-after').forEach(x => x.classList.remove('drop-before', 'drop-after'));
+      if (+el.dataset.i !== rxDrag) el.classList.add(after ? 'drop-after' : 'drop-before'); };
+    el.ondrop = e => { if (rxDrag === null) return; e.preventDefault(); e.stopPropagation();
+      const r = el.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      rxMove(rxDrag, +el.dataset.i + (after ? 1 : 0)); };
+  });
+}
+let rxDrag = null;
+// move rule `from` so that it sits at list position `to` (an index before the move); the moved rule stays selected
+function rxMove(from, to) {
+  if (to > from) to--;
+  if (from === to) return;
+  const [r] = rules.splice(from, 1); rules.splice(to, 0, r); rxSel = to; refresh();
+}
+function rxSwatch() {
+  const r = rxRule(); if (!r) return;
+  const own = !!r.colour || (r.own && !r.role);
+  $('rx-role').value = own ? 'own' : r.role;
+  $('c-rx').style.background = colourOf(r) || '#FFFFFF';
+  $('rx-own-note').hidden = !own;
+}
+function rxAutosize() { const el = $('rx-re'); el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; rxMirror(); }
+// ---------- regex colouring: a token list for the common .NET/JavaScript subset ----------
+// kinds: grp ( ) and group prefixes, cls [...], esc \x, qnt * + ? {n,m}, alt |, anc ^ $ ., txt literal
+function rxTokens(src) {
+  const t = []; let i = 0;
+  const push = (kind, len) => { t.push({ kind, start: i, end: i + len, text: src.slice(i, i + len) }); i += len; };
+  while (i < src.length) {
+    const c = src[i];
+    if (c === '\\') { let len = 2; const n = src[i + 1] || '';
+      if (n === 'x') len = 4; else if (n === 'u') len = 6; else if (n === 'p' || n === 'P') { const e = src.indexOf('}', i); len = e > 0 ? e - i + 1 : 2; }
+      else if (n === 'k' && src[i + 2] === '<') { const e = src.indexOf('>', i); len = e > 0 ? e - i + 1 : 2; }
+      push('esc', Math.min(len, src.length - i)); continue; }
+    if (c === '[') { let j = i + 1; if (src[j] === '^') j++; if (src[j] === ']') j++;
+      while (j < src.length && src[j] !== ']') j += src[j] === '\\' ? 2 : 1;
+      push('cls', Math.min(j + 1, src.length) - i); continue; }
+    if (c === '(') { const m = src.slice(i).match(/^\((\?(?:<[=!]|[=!:>]|<[A-Za-z_]\w*>|'[A-Za-z_]\w*'|[imsnx-]+:?|\(\w+\)))?/); push('grp', m[0].length); continue; }
+    if (c === ')') { push('grp', 1); continue; }
+    if (c === '{') { const m = src.slice(i).match(/^\{\d+(,\d*)?\}\??/); if (m) { push('qnt', m[0].length); continue; } }
+    if (c === '*' || c === '+' || c === '?') { push('qnt', src[i + 1] === '?' ? 2 : 1); continue; }
+    if (c === '|') { push('alt', 1); continue; }
+    if (c === '^' || c === '$' || c === '.') { push('anc', 1); continue; }
+    let j = i + 1; while (j < src.length && !'\\[(){*+?|^$.'.includes(src[j])) j++;
+    push('txt', j - i);
+  }
+  return t;
+}
+// the bracket pair at the caret: an opening or closing ( ) token touching the caret, and its partner
+function rxBracketPair(tokens, caret) {
+  const isOpen = k => k.kind === 'grp' && k.text[0] === '(', isClose = k => k.kind === 'grp' && k.text === ')';
+  const at = tokens.find(k => (isOpen(k) || isClose(k)) && (k.start === caret || k.end === caret || (caret > k.start && caret < k.end)));
+  if (!at) return null;
+  const stack = []; let partner = null;
+  for (const k of tokens) { if (isOpen(k)) stack.push(k); else if (isClose(k)) { const o = stack.pop(); if (o === at) { partner = k; break; } if (k === at) { partner = o || null; break; } } }
+  return partner ? [at, partner] : [at];
+}
+function rxMirror() {
+  const el = $('rx-re'), src = el.value, tokens = rxTokens(src);
+  const caret = document.activeElement === el ? el.selectionStart : -1, pair = caret >= 0 ? rxBracketPair(tokens, caret) : null;
+  $('rx-mirror').innerHTML = tokens.map(k => { const cls = (k.kind === 'txt' ? '' : k.kind) + (pair && pair.includes(k) ? ' match' : '');
+    return cls ? `<span class="${cls.trim()}">${esc(k.text)}</span>` : esc(k.text); }).join('') + '\n';
+}
+document.addEventListener('selectionchange', () => { if (document.activeElement === $('rx-re')) rxMirror(); });
+$('rx-re').addEventListener('blur', rxMirror);
+function renderRxEditor() {
+  const r = rxRule(); if (!r) return;
+  $('rx-name').value = r.name;
+  if ($('rx-re').value !== rxSrc(r)) $('rx-re').value = rxSrc(r); // only when it really changed, or the undo stack is lost
+  rxAutosize();
+  $('rx-cs').setAttribute('aria-pressed', r.own ? r.cs : true);
+  $('rx-word').setAttribute('aria-pressed', r.own ? !!r.word : false);
+  $('rx-word').disabled = !r.own || r.regex !== false;
+  $('rx-role').innerHTML = ROLES.filter(x => x.key !== 'bg').map(x => `<option value="${x.key}">${esc(x.name)}</option>`).join('') + '<option value="own">own colour</option>';
+  rxSwatch();
+  const st = $('rx-status');
+  const mv = `<span class="mv"><button data-mv="top" title="Move to the top: wins over every other rule">⤒</button><button data-mv="-1" title="Move up: wins over the rule above">▲</button><button data-mv="1" title="Move down">▼</button>
+    <button class="linkbtn" id="rx-del">${r.own ? 'Delete' : r.off ? 'Add back' : 'Leave out'}</button></span>`;
+  $('rx-re').parentElement.parentElement.classList.toggle('invalid', !!(r.noPreview && r.invalid));
+  if (r.noPreview && r.invalid) { st.className = 'rx-status invalid'; st.innerHTML = `<span>&#9888; Invalid regular expression: ${esc(r.previewError || 'cannot be parsed')}. This rule colours nothing until it is fixed.</span>${mv}`; }
+  else if (r.noPreview) { st.className = 'rx-status bad'; st.innerHTML = `<span>Uses .NET-only syntax this page cannot run (${esc(r.previewError || '')}). RDM may accept it; it stays in your file as is and is not shown in the preview.</span>${mv}`; }
+  else if (!rxInfo || !rxInfo.total) { st.className = 'rx-status'; st.innerHTML = `<span>Valid · no match in the demo session</span>${mv}`; }
+  else { st.className = 'rx-status'; st.innerHTML = `<span>Valid · ${rxInfo.total} match${rxInfo.total === 1 ? '' : 'es'} on ${rxInfo.lines} line${rxInfo.lines === 1 ? '' : 's'}${rxInfo.lost ? `, ${rxInfo.lost} taken by earlier rules` : ''}</span>${mv}`; }
+  st.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => { if (b.dataset.mv === 'top') return rxMove(rxSel, 0);
+    const j = rxSel + +b.dataset.mv; if (j < 0 || j >= rules.length) return; rxMove(rxSel, j > rxSel ? j + 1 : j); });
+  $('rx-del').onclick = () => { if (r.own) { rules.splice(rxSel, 1); rxSel = Math.max(0, rxSel - 1); } else r.off = !r.off; refresh(); };
+  // match information
+  const mi = $('rx-matches');
+  if (!rxInfo || !rxInfo.matches.length) mi.innerHTML = '<p class="small" style="margin:0">No match in the demo session. Try a word that appears in it, like <code>cdp</code> or <code>Vlan10</code>.</p>';
+  else mi.innerHTML = '<div class="rx-match">' + rxInfo.matches.slice(0, 12).map(m =>
+    `<small>L${m.line}</small><span><code>${esc(m.text)}</code>${m.by != null ? ` <span class="lost">· taken by “${esc(rules[m.by].name)}”</span>` : ''}</span>`).join('') +
+    (rxInfo.matches.length > 12 ? `<small></small><span class="small">… and ${rxInfo.matches.length - 12} more</span>` : '') + '</div>';
+}
+// the demo session with every rule's colour, and this rule's matches marked: claimed (underline) or lost to an earlier rule (dashed)
+const NET_ONLY = /\(\?[>(']|\(\?[imsnx-]+[):]|\\[AZzG]|\\k'|-\[/;
+function paintRx() {
+  const sel = rxSel, r = rxRule(); if (!r) return;
+  const compiled = rules.map((x, i) => [i, x.off ? null : compile(x)]);
+  let mine = null;
+  try { mine = r.off ? null : compile(r); r.previewError = null; } catch {}
+  r.invalid = false;
+  if (!mine && !r.off) { try { new RegExp(r.own ? r.kw : r.re); } catch (e) { r.previewError = e.message.replace(/^Invalid regular expression: /, '').replace(/^\/.*\/[a-z]*: /, '');
+    // .NET-only syntax is not an error: RDM runs it, this page cannot. Everything else is a broken pattern.
+    r.invalid = !NET_ONLY.test(r.own ? r.kw : r.re); } }
+  rxInfo = { total: 0, lines: 0, lost: 0, matches: [] };
+  const html = DEMO.replace(/\n$/, '').split('\n').map((line, ln) => {
+    const owner = new Array(line.length).fill(null), hit = new Array(line.length).fill(false);
+    for (const [i, re] of compiled) { if (!re) continue; for (const m of line.matchAll(re)) { if (!m[0].length) continue; for (let k = m.index; k < m.index + m[0].length; k++) if (owner[k] === null) owner[k] = i; } }
+    if (mine) { let any = false; for (const m of line.matchAll(mine)) { if (!m[0].length) continue; any = true; rxInfo.total++;
+      for (let k = m.index; k < m.index + m[0].length; k++) hit[k] = true;
+      const by = owner[m.index] === sel ? null : owner[m.index]; if (by != null) rxInfo.lost++;
+      rxInfo.matches.push({ line: ln + 1, text: m[0], by }); } if (any) rxInfo.lines++; }
+    let out = '';
+    for (let k = 0; k < line.length;) {
+      let j = k; while (j < line.length && owner[j] === owner[k] && hit[j] === hit[k]) j++;
+      const t = esc(line.slice(k, j)), cls = hit[k] ? (owner[k] === sel ? ' class="on"' : ' class="lost"') : '';
+      out += owner[k] === null && !hit[k] ? t : `<span${owner[k] === null ? '' : ` data-i="${owner[k]}"`}${cls}>${t}</span>`; k = j;
+    }
+    return out;
+  }).join('\n');
+  const scr = $('rx-screen'); scr.innerHTML = html; scr.classList.toggle('focus', !!mine);
+}
+function renderRx(reveal) { if (rxSel >= rules.length) rxSel = rules.length - 1; paintRx(); renderRxList(); renderRxEditor(); rxFit(); if (reveal) rxReveal(); }
+// Rules view: with the page at its top, the list, the session and the reference each end at the bottom of the
+// window and scroll inside (owner, 28.10.2026). Stacked layouts on narrow windows keep their natural height.
+function rxFit() {
+  const pad = 16 + (parseFloat(getComputedStyle(document.documentElement).paddingBottom) || 0);
+  const fit = (el, on) => { if (!el) return; if (!on) { el.style.maxHeight = ''; return; }
+    const top = el.getBoundingClientRect().top + scrollY; el.style.maxHeight = Math.max(160, innerHeight - top - pad) + 'px'; };
+  const cols = innerWidth > 900, three = innerWidth > 1180;
+  fit($('rx-screen'), cols); fit($('rx-items'), cols); fit(document.querySelector('.rx-ref'), three);
+}
+addEventListener('resize', () => { if (view === 'rules') { rxAutosize(); rxFit(); } });
+// scroll the session to this rule's first match, a few lines below the top, unless one is already in view
+function rxReveal() {
+  const scr = $('rx-screen'), spans = [...scr.querySelectorAll('span.on, span.lost')];
+  if (!spans.length) return;
+  const top = scr.scrollTop, bottom = top + scr.clientHeight;
+  if (spans.some(s => s.offsetTop >= top && s.offsetTop + s.offsetHeight <= bottom)) return;
+  const line = parseFloat(getComputedStyle(scr).lineHeight) || 19;
+  scr.scrollTo({ top: Math.max(0, spans[0].offsetTop - 3 * line), behavior: reducedMotion ? 'auto' : 'smooth' });
+}
+$('rx-name').oninput = e => { rxRule().name = e.target.value; renderRxList(); renderExport(); };
+$('rx-re').oninput = e => { const el = e.target;
+  if (/[\r\n]/.test(el.value)) { const a = el.selectionStart; const before = el.value.slice(0, a).replace(/[\r\n]/g, '').length; el.value = el.value.replace(/[\r\n]/g, ''); el.setSelectionRange(before, before); }
+  const r = rxRule(); if (r.own) r.kw = el.value; else { r.re = el.value; r.changed = r.re !== RULES[r.idx][2]; }
+  paint(); apply(); paintRx(); renderRxList(); renderRxEditor(); rxFit(); };
+$('rx-re').onkeydown = e => { if (e.key === 'Enter') e.preventDefault(); };
+$('rx-cs').onclick = () => { const r = rxRule(); if (!r.own) { toast('The built-in rules are always case-sensitive, as RDM would otherwise colour “Device” as device'); return; } r.cs = !r.cs; refresh(); };
+$('rx-word').onclick = () => { const r = rxRule(); if (!r.own) return; r.word = !r.word; refresh(); };
+$('rx-role').onchange = e => { const r = rxRule(), v = e.target.value;
+  if (v === 'own') r.colour = colourOf(r) || '#FFFFFF'; else { r.role = v; r.colour = null; } refresh(); };
+// the picker on a rule edits that rule alone: a pick detaches it from its group into its own colour, which the
+// Colours tab then lists under "Rules with their own look" (with the way back to the group's look)
+$('c-rx').onclick = () => { const r = rxRule(); openPicker('rx', r.name, () => colourOf(r), v => r.colour = v); };
+$('rx-add').onclick = () => {
+  const at = rxFilter && rxFilter[0] !== 'r' ? Math.max(0, rules.findIndex((r, i) => rowTargets(rxFilter)(i))) : 0;
+  rules.splice(at, 0, { name: 'My rule', own: true, role: rxFilter && rxFilter[0] !== 'r' ? rxFilter : null, colour: rxFilter && rxFilter[0] !== 'r' ? null : '#FFFFFF', kw: '', regex: true, cs: true, word: false, off: false });
+  rxSel = at; refresh(); $('rx-re').focus();
+  toast(at === 0 ? 'Added at the top: in RDM the first matching rule wins. Move it down if a rule above should win.' : 'Added in front of this group’s rules.');
+};
+$('rx-screen').addEventListener('click', e => { const s = e.target.closest('span[data-i]'); if (!s) return; rxSel = +s.dataset.i; rxFilter = null; renderRx(); });
+function rxInsert(txt) { const el = $('rx-re'); el.focus();
+  // the editing command keeps the browser's undo stack; the fallback does not
+  if (!document.execCommand || !document.execCommand('insertText', false, txt)) {
+    const a = el.selectionStart ?? el.value.length, b = el.selectionEnd ?? a;
+    el.value = el.value.slice(0, a) + txt + el.value.slice(b); el.setSelectionRange(a + txt.length, a + txt.length); el.dispatchEvent(new Event('input')); } }
+const RX_BLOCKS = [
+  ['One word, whole', String.raw`(?<![\w-])(?:cdp)(?![\w-])`],
+  ['Several words', String.raw`(?<![\w-])(?:lldp|cdp)(?![\w-])`],
+  ['At the start of a command', String.raw`(?<=^\s*|^[\w.-]+(?:\([\w-]+\))?[#>]\s*)cdp`],
+  ['The word after a keyword', String.raw`(?<=\bdescription\s+)\S+`],
+  ['The whole line that contains', String.raw`^.*\bdevice-tracking\b.*$`],
+  ['A line starting with', String.raw`^\s*ntp\b.*`],
+  ['An interface name', RULES.find(r => r[0] === 'Interface name')[2]],
+  ['An IPv4 address', RULES.find(r => r[0] === 'IPv4 address')[2]],
+  ['A number', String.raw`\b\d+\b`],
+];
+const RX_TOKENS = [
+  ['One of a, b or c', '[abc]'], ['Anything but a, b or c', '[^abc]'], ['A character in a range', '[a-z]'], ['Any single character', '.'],
+  ['Either a or b', 'a|b'], ['Whitespace', String.raw`\s`], ['A digit', String.raw`\d`], ['A word character', String.raw`\w`],
+  ['A word boundary', String.raw`\b`], ['Start of the line', '^'], ['End of the line', '$'],
+  ['Optional', '?'], ['Any number of times', '*'], ['At least once', '+'], ['Between 2 and 5 times', '{2,5}'],
+  ['Group without capture', '(?:…)'], ['Followed by', '(?=…)'], ['Not followed by', '(?!…)'], ['Preceded by', '(?<=…)'], ['Not preceded by', '(?<!…)'],
+];
+const refList = (el, list) => { el.innerHTML = list.map(([l, t], i) => `<button data-i="${i}"><span>${esc(l)}</span><code title="${esc(t)}">${esc(t)}</code></button>`).join('');
+  el.querySelectorAll('button').forEach(b => b.onclick = () => rxInsert(list[+b.dataset.i][1])); };
+refList($('rx-blocks'), RX_BLOCKS); refList($('rx-tokens'), RX_TOKENS);
+
+renderPresets(); renderRoles(); refresh();
+prepIds().then(renderExport);
+</script>
