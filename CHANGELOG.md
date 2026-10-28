@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0]
+
+The colour editor, at https://aswertus.github.io/cisco-rdm-highlighting/: pick a preset or your own
+colours per group, bold and underline, add, change and reorder rules with a live preview on a demo
+session (first matching rule wins, as in RDM), open the `.xml` you already use, and download the
+rules and the terminal colours to import. Your colours and files stay in the browser; nothing is
+uploaded (the page loads its fonts from Google Fonts).
+The exported bold and underline settings use the tag names `IsBold` and `IsUnderlined`, not yet
+confirmed against an RDM export. No changes to the shipped rules.
+
 ## [0.1.8]
 
 No rule changes. The pull-request check now also accepts `site/index.html` and

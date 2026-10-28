@@ -101,6 +101,15 @@ Connect to a switch and run `show running-config`.
 
 ---
 
+## Colour editor
+
+Other colours, bold interfaces, a rule of your own? The
+**[colour editor](https://aswertus.github.io/cisco-rdm-highlighting/)** runs in your browser: start
+from a preset or pick colours per group, add, change and reorder rules with a live preview on a demo
+session, open the `.xml` you already use to change it, and download the files to import. Your
+colours and files stay in your browser; nothing is uploaded (the page only loads its fonts from
+Google Fonts).
+
 ## Good to know
 
 - **Import adds rules below the existing ones**, and the rule higher up wins. Import into an empty
