@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.8]
+
+No rule changes. The pull-request check now also accepts `site/index.html` and
+`.github/workflows/pages.yml`: the colour-editor page and its GitHub Pages workflow, which 0.2.0
+brings together.
+
 ## [0.1.7]
 
 Interface ranges are coloured as a whole: in `interface range Gi1/0/1-3` the `-3` is yellow like the
