@@ -47,7 +47,7 @@ text colour. `snmp-server` lines are coloured as a whole, with their addresses s
 | orange | notices: `disabled`, `err-disabled`, `device-tracking` lines                                                                                 |
 | violet | ACL / policy keywords (`access-group`, `route-map`, `class-map`, …) and options (`access`, `trunk`, `in`, `any`, `match-all`, `portfast`, …) |
 | teal   | protocols (`ssh`, `tcp`, `bgp`, `ospf`, `vrf`, …), `authentication`/`authorization`/`accounting`, whole `snmp-server` lines                  |
-| yellow | interfaces (`GigabitEthernet1/0/1`, `Vlan10`, `Po1`, `LISP0.100`, …), `line con/vty`, `address-family`                                       |
+| yellow | interfaces (`GigabitEthernet1/0/1`, `Vlan10`, `Po1`, `LISP0.100`, ranges `Gi1/0/1-3`, …), `line con/vty`, `address-family`                   |
 | white  | your values: IPv4/IPv6/MAC addresses, host/ACL/VRF/class-map names, secrets                                                                  |
 | plain  | banner art and everything else                                                                                                               |
 

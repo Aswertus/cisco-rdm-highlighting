@@ -249,7 +249,7 @@
       <IsCompleteWord>false</IsCompleteWord>
       <IsCaseSensitive>true</IsCaseSensitive>
       <IsRegex>true</IsRegex>
-      <Keyword>(?-i)\b(?:(?:[Ff]ast|(?:[Ff]ive|[Tt]en|[Tt]wenty[Ff]ive|[Ff](?:orty|ifty)|(?:[Tt]wo)?[Hh]undred)?[Gg](?:ig)?(?:abit)?)[Ee](?:th(?:ernet)?)?|[Ee]th(?:ernet)?|Fa|Gi|Te|Fo|Fi|Tw|Hu|App[Gg](?:ig)?(?:abit)?[Ee](?:th(?:ernet)?)?|[Ss]erial|[Cc]ellular|Management|[Mm]gmt|[Ll]oopback|Lo|[Tt]unnel|Tu|VLAN|[Vv]lan|Vl|[Nn]ull|[Vv]irtual-[Tt]emplate|[Dd]ialer|[Aa]sync|BRI|BVI|BDI|[Bb]ridge-?[Dd]omain|[Pp]ort-?[Cc]hannel|Po|[Dd]ot11[Rr]adio|LISP|[Ww]lan|[Vv]irtual-[Aa]ccess|[Bb]luetooth|[Nn][Vv][Ii]|[Vv][Mm][Ii]|[Vv]asi[Ll]eft|[Vv]asi[Rr]ight)(?:\d+[./])*\d+(?:\.\d+)?\b</Keyword>
+      <Keyword>(?-i)\b(?:(?:[Ff]ast|(?:[Ff]ive|[Tt]en|[Tt]wenty[Ff]ive|[Ff](?:orty|ifty)|(?:[Tt]wo)?[Hh]undred)?[Gg](?:ig)?(?:abit)?)[Ee](?:th(?:ernet)?)?|[Ee]th(?:ernet)?|Fa|Gi|Te|Fo|Fi|Tw|Hu|App[Gg](?:ig)?(?:abit)?[Ee](?:th(?:ernet)?)?|[Ss]erial|[Cc]ellular|Management|[Mm]gmt|[Ll]oopback|Lo|[Tt]unnel|Tu|VLAN|[Vv]lan|Vl|[Nn]ull|[Vv]irtual-[Tt]emplate|[Dd]ialer|[Aa]sync|BRI|BVI|BDI|[Bb]ridge-?[Dd]omain|[Pp]ort-?[Cc]hannel|Po|[Dd]ot11[Rr]adio|LISP|[Ww]lan|[Vv]irtual-[Aa]ccess|[Bb]luetooth|[Nn][Vv][Ii]|[Vv][Mm][Ii]|[Vv]asi[Ll]eft|[Vv]asi[Rr]ight)(?:\d+[./])*\d+(?:\.\d+)?(?:-\d+)?\b</Keyword>
       <Name>Interface name</Name>
       <TextColorString>#FFD433</TextColorString>
     </SyntaxHighlightingItem>
