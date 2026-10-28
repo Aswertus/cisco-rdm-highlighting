@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.7]
+
+Interface ranges are coloured as a whole: in `interface range Gi1/0/1-3` the `-3` is yellow like the
+rest of the name. Before, the colour stopped at the first port number.
+
 ## [0.1.6]
 
 No rule changes. The pull-request check now also refuses symlinks, executables and submodules in
